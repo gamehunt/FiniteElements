@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <dolfin xmlns:dolfin="http://fenicsproject.org">
-  <mesh_function type="uint" dim="2" size="7240">
+  <mesh_function type="uint" dim="2" size="7154">
     <entity index="0" value="7"/>
     <entity index="1" value="7"/>
     <entity index="2" value="7"/>
@@ -7155,91 +7155,5 @@
     <entity index="7151" value="7"/>
     <entity index="7152" value="7"/>
     <entity index="7153" value="7"/>
-    <entity index="7154" value="7"/>
-    <entity index="7155" value="7"/>
-    <entity index="7156" value="7"/>
-    <entity index="7157" value="7"/>
-    <entity index="7158" value="7"/>
-    <entity index="7159" value="7"/>
-    <entity index="7160" value="7"/>
-    <entity index="7161" value="7"/>
-    <entity index="7162" value="7"/>
-    <entity index="7163" value="7"/>
-    <entity index="7164" value="7"/>
-    <entity index="7165" value="7"/>
-    <entity index="7166" value="7"/>
-    <entity index="7167" value="7"/>
-    <entity index="7168" value="7"/>
-    <entity index="7169" value="7"/>
-    <entity index="7170" value="7"/>
-    <entity index="7171" value="7"/>
-    <entity index="7172" value="7"/>
-    <entity index="7173" value="7"/>
-    <entity index="7174" value="7"/>
-    <entity index="7175" value="7"/>
-    <entity index="7176" value="7"/>
-    <entity index="7177" value="7"/>
-    <entity index="7178" value="7"/>
-    <entity index="7179" value="7"/>
-    <entity index="7180" value="7"/>
-    <entity index="7181" value="7"/>
-    <entity index="7182" value="7"/>
-    <entity index="7183" value="7"/>
-    <entity index="7184" value="7"/>
-    <entity index="7185" value="7"/>
-    <entity index="7186" value="7"/>
-    <entity index="7187" value="7"/>
-    <entity index="7188" value="7"/>
-    <entity index="7189" value="7"/>
-    <entity index="7190" value="7"/>
-    <entity index="7191" value="7"/>
-    <entity index="7192" value="7"/>
-    <entity index="7193" value="7"/>
-    <entity index="7194" value="7"/>
-    <entity index="7195" value="7"/>
-    <entity index="7196" value="7"/>
-    <entity index="7197" value="7"/>
-    <entity index="7198" value="7"/>
-    <entity index="7199" value="7"/>
-    <entity index="7200" value="7"/>
-    <entity index="7201" value="7"/>
-    <entity index="7202" value="7"/>
-    <entity index="7203" value="7"/>
-    <entity index="7204" value="7"/>
-    <entity index="7205" value="7"/>
-    <entity index="7206" value="7"/>
-    <entity index="7207" value="7"/>
-    <entity index="7208" value="7"/>
-    <entity index="7209" value="7"/>
-    <entity index="7210" value="7"/>
-    <entity index="7211" value="7"/>
-    <entity index="7212" value="7"/>
-    <entity index="7213" value="7"/>
-    <entity index="7214" value="7"/>
-    <entity index="7215" value="7"/>
-    <entity index="7216" value="7"/>
-    <entity index="7217" value="7"/>
-    <entity index="7218" value="7"/>
-    <entity index="7219" value="7"/>
-    <entity index="7220" value="7"/>
-    <entity index="7221" value="7"/>
-    <entity index="7222" value="7"/>
-    <entity index="7223" value="7"/>
-    <entity index="7224" value="7"/>
-    <entity index="7225" value="7"/>
-    <entity index="7226" value="7"/>
-    <entity index="7227" value="7"/>
-    <entity index="7228" value="7"/>
-    <entity index="7229" value="7"/>
-    <entity index="7230" value="7"/>
-    <entity index="7231" value="7"/>
-    <entity index="7232" value="7"/>
-    <entity index="7233" value="7"/>
-    <entity index="7234" value="7"/>
-    <entity index="7235" value="7"/>
-    <entity index="7236" value="7"/>
-    <entity index="7237" value="7"/>
-    <entity index="7238" value="7"/>
-    <entity index="7239" value="7"/>
   </mesh_function>
 </dolfin>
