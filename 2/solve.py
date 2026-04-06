@@ -1,8 +1,11 @@
 from fenics import *
 import matplotlib.pyplot as plt
+import sys
 
-mesh = Mesh("mesh/5/grid_5.xml")
-boundaries = MeshFunction("size_t", mesh, "mesh/5/grid_5_facet_region.xml")
+size = sys.argv[1]
+
+mesh = Mesh(f'mesh/{size}/grid_{size}.xml')
+boundaries = MeshFunction("size_t", mesh, f'mesh/{size}/grid_{size}_facet_region.xml')
 
 ds = Measure("ds", subdomain_data=boundaries)
 
@@ -13,11 +16,12 @@ V = FunctionSpace(mesh, "CG", 2)
 u_1 = Expression("x[1]", degree=2)
 
 # Граничные условия
-bcs = [DirichletBC(V, Constant(0.0), boundaries, 1),
-       DirichletBC(V, Constant(1.0), boundaries, 2),
-       DirichletBC(V, Constant(0.5), boundaries, 5),
-       DirichletBC(V, Constant(0.5), boundaries, 6),
-       DirichletBC(V, u_1, boundaries, 3)]
+bcs = [DirichletBC(V, Constant(0.0), boundaries, 1), # Низ
+       DirichletBC(V, Constant(1.0), boundaries, 2), # Верх
+       DirichletBC(V, Constant(0.5), boundaries, 5), # Цилиндр 1
+       DirichletBC(V, Constant(0.5), boundaries, 6), # Цилиндр 2
+       DirichletBC(V, u_1, boundaries, 3)] # Лево (вход)
+# На выходе естественные граничные условия (вроде)
 
 # Вариационная задача
 u = TrialFunction(V)
