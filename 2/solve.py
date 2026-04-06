@@ -16,6 +16,7 @@ u_1 = Expression("x[1]", degree=2)
 bcs = [DirichletBC(V, Constant(0.0), boundaries, 1),
        DirichletBC(V, Constant(1.0), boundaries, 2),
        DirichletBC(V, Constant(0.5), boundaries, 5),
+       DirichletBC(V, Constant(0.5), boundaries, 6),
        DirichletBC(V, u_1, boundaries, 3)]
 
 # Вариационная задача
@@ -28,11 +29,14 @@ L = f * v * dx
 # Решение задачи
 u = Function(V)
 solve(a == L, u, bcs)
-plot(u, title="Решение")
-plt.show()
 
 #  Циркуляция 
 n = FacetNormal(mesh)  
 u_n = dot(grad(u), n)  
-Gamma = assemble(u_n * ds(subdomain_data=boundaries, subdomain_id=5))
-print(Gamma)
+Gamma1 = assemble(u_n * ds(subdomain_data=boundaries, subdomain_id=5))
+Gamma2 = assemble(u_n * ds(subdomain_data=boundaries, subdomain_id=6))
+print(Gamma1, Gamma2)
+
+c = plot(u, title="Решение")
+plt.colorbar(c)
+plt.show()

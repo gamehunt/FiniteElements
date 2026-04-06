@@ -34,11 +34,11 @@ Line Loop(1) = {1, 2, 3, 4};
 Plane Surface(1) = {1};
 
 // Первый цилиндр (круг)
-Point(5) = {l1, h1, 0, 0.2};
-Point(6) = {l1 + r1, h1, 0, 0.2};
-Point(7) = {l1, h1 + r1, 0, 0.2};
-Point(8) = {l1 - r1, h1, 0, 0.2};
-Point(9) = {l1, h1 - r1, 0, 0.2};
+Point(5) = {l1, h1, 0, dd};
+Point(6) = {l1 + r1, h1, 0, dd};
+Point(7) = {l1, h1 + r1, 0, dd};
+Point(8) = {l1 - r1, h1, 0, dd};
+Point(9) = {l1, h1 - r1, 0, dd};
 
 Circle(5) = {6, 5, 7};
 Circle(6) = {7, 5, 8};
@@ -49,11 +49,11 @@ Line Loop(2) = {5, 6, 7, 8};
 Plane Surface(2) = {2};
 
 // Второй цилиндр (круг)
-Point(10) = {l2, h2, 0, 0.2};
-Point(11) = {l2 + r2, h2, 0, 0.2};
-Point(12) = {l2, h2 + r2, 0, 0.2};
-Point(13) = {l2 - r2, h2, 0, 0.2};
-Point(14) = {l2, h2 - r2, 0, 0.2};
+Point(10) = {l2, h2, 0, dd};
+Point(11) = {l2 + r2, h2, 0, dd};
+Point(12) = {l2, h2 + r2, 0, dd};
+Point(13) = {l2 - r2, h2, 0, dd};
+Point(14) = {l2, h2 - r2, 0, dd};
 
 Circle(9)  = {11, 10, 12};
 Circle(10) = {12, 10, 13};
