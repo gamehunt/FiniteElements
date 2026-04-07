@@ -19,7 +19,7 @@ lenghts=(1.10 1.25 1.40)
 
 for l in "${lenghts[@]}"; do
     name=grid_l_${l}
-    par=mesh/$name
+    par=mesh/l_${l}
     mkdir -p $par
     sed -e "s/%SIZE%/${size_base}/g" -e "s/%LENGTH%/${l}/g" -e "s/%HEIGHT%/${h_base}/g" grid_template.geo >$par/$name.geo
     gmsh $par/${name}.geo -2 -format msh2 $par/${name}.msh
@@ -30,7 +30,7 @@ heights=(0.35 0.50 0.65)
 
 for h in "${heights[@]}"; do
     name=grid_h_${h}
-    par=mesh/$name
+    par=mesh/h_${h}
     mkdir -p $par
     sed -e "s/%SIZE%/${size_base}/g" -e "s/%LENGTH%/${l_base}/g" -e "s/%HEIGHT%/${h}/g" grid_template.geo >$par/$name.geo
     gmsh $par/${name}.geo -2 -format msh2 $par/${name}.msh
