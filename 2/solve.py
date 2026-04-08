@@ -2,7 +2,8 @@ from fenics import *
 import matplotlib.pyplot as plt
 import sys
 
-size = sys.argv[1]
+size   = sys.argv[1]
+degree = int(sys.argv[2])
 
 mesh = Mesh(f'mesh/{size}/grid_{size}.xml')
 boundaries = MeshFunction("size_t", mesh, f'mesh/{size}/grid_{size}_facet_region.xml')
@@ -10,10 +11,10 @@ boundaries = MeshFunction("size_t", mesh, f'mesh/{size}/grid_{size}_facet_region
 ds = Measure("ds", subdomain_data=boundaries)
 
   
-V = FunctionSpace(mesh, "CG", 2)
+V = FunctionSpace(mesh, "CG", degree)
 
 # Условие на входе в канал
-u_1 = Expression("x[1]", degree=2)
+u_1 = Expression("x[1]", degree=degree)
 
 # Граничные условия
 bcs = [DirichletBC(V, Constant(0.0), boundaries, 1), # Низ
