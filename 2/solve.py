@@ -2,46 +2,69 @@ from fenics import *
 import matplotlib.pyplot as plt
 import sys
 
-size   = sys.argv[1]
-degree = int(sys.argv[2])
+def solve_problem(size, degree):
+    prefix = f'grid_{size}' if str(size).isdigit() else str(size)
 
-mesh = Mesh(f'mesh/{size}/grid_{size}.xml')
-boundaries = MeshFunction("size_t", mesh, f'mesh/{size}/grid_{size}_facet_region.xml')
+    mesh = Mesh(f'mesh/{size}/{prefix}.xml')
+    boundaries = MeshFunction("size_t", mesh, f'mesh/{size}/{prefix}_facet_region.xml')
 
-ds = Measure("ds", subdomain_data=boundaries)
+    ds = Measure("ds", subdomain_data=boundaries)
 
-  
-V = FunctionSpace(mesh, "CG", degree)
+    V = FunctionSpace(mesh, "CG", degree)
 
-# Условие на входе в канал
-u_1 = Expression("x[1]", degree=degree)
+    # Условие на входе в канал
+    u_1 = Expression("x[1]", degree=degree)
 
-# Граничные условия
-bcs = [DirichletBC(V, Constant(0.0), boundaries, 1), # Низ
-       DirichletBC(V, Constant(1.0), boundaries, 2), # Верх
-       DirichletBC(V, Constant(0.5), boundaries, 5), # Цилиндр 1
-       DirichletBC(V, Constant(0.5), boundaries, 6), # Цилиндр 2
-       DirichletBC(V, u_1, boundaries, 3)] # Лево (вход)
-# На выходе естественные граничные условия (вроде)
+    # Граничные условия
+    bcs = [DirichletBC(V, Constant(0.0), boundaries, 1), # Низ
+           DirichletBC(V, Constant(1.0), boundaries, 2), # Верх
+           DirichletBC(V, Constant(0.5), boundaries, 5), # Цилиндр 1
+           DirichletBC(V, Constant(0.5), boundaries, 6), # Цилиндр 2
+           DirichletBC(V, u_1, boundaries, 3)] # Лево (вход)
+    # На выходе естественные граничные условия (вроде)
 
-# Вариационная задача
-u = TrialFunction(V)
-v = TestFunction(V)
-f = Constant(0.0)  
-a = dot(grad(u), grad(v)) * dx
-L = f * v * dx
+    # Вариационная задача
+    u = TrialFunction(V)
+    v = TestFunction(V)
+    f = Constant(0.0)
+    a = dot(grad(u), grad(v)) * dx
+    L = f * v * dx
 
-# Решение задачи
-u = Function(V)
-solve(a == L, u, bcs)
+    # Решение задачи
+    solution = Function(V)
+    solve(a == L, solution, bcs)
 
-#  Циркуляция 
-n = FacetNormal(mesh)  
-u_n = dot(grad(u), n)  
-Gamma1 = assemble(u_n * ds(subdomain_data=boundaries, subdomain_id=5))
-Gamma2 = assemble(u_n * ds(subdomain_data=boundaries, subdomain_id=6))
-print(Gamma1, Gamma2)
+    #  Циркуляция
+    n = FacetNormal(mesh)
+    u_n = dot(grad(solution), n)
+    Gamma1 = assemble(u_n * ds(subdomain_data=boundaries, subdomain_id=5))
+    Gamma2 = assemble(u_n * ds(subdomain_data=boundaries, subdomain_id=6))
 
-c = plot(u, title="Решение")
-plt.colorbar(c)
-plt.show()
+    return {
+        "mesh": mesh,
+        "boundaries": boundaries,
+        "solution": solution,
+        "degree": degree,
+        "gamma1": Gamma1,
+        "gamma2": Gamma2,
+        "dofs": V.dim(),
+    }
+
+
+def plot_solution(result, title="Решение"):
+    c = plot(result["solution"], title=title)
+    plt.colorbar(c)
+    return c
+
+
+def main():
+    size = sys.argv[1]
+    degree = int(sys.argv[2])
+    result = solve_problem(size, degree)
+    print(result["gamma1"], result["gamma2"])
+    plot_solution(result, title="Решение")
+    plt.show()
+
+
+if __name__ == "__main__":
+    main()

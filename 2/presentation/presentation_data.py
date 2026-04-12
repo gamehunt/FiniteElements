@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
 from pathlib import Path
 import re
@@ -20,19 +18,19 @@ class MeshCase:
     xml_path: Path
     facet_path: Path
     msh_path: Path
-    parameters: dict[str, float]
+    parameters: dict
     vertex_count: int
     cell_count: int
 
 
-def _parse_float(pattern: str, text: str) -> float | None:
+def _parse_float(pattern, text):
     match = re.search(pattern, text)
     if not match:
         return None
     return float(match.group(1))
 
 
-def parse_geo_parameters(geo_path: Path) -> dict[str, float]:
+def parse_geo_parameters(geo_path):
     text = geo_path.read_text(encoding="utf-8")
     parameters = {}
     for key in ("L", "H", "r1", "l1", "h1", "r2", "l2", "h2", "N"):
@@ -42,7 +40,7 @@ def parse_geo_parameters(geo_path: Path) -> dict[str, float]:
     return parameters
 
 
-def load_mesh(xml_path: Path) -> tuple[np.ndarray, np.ndarray]:
+def load_mesh(xml_path):
     root = ET.parse(xml_path).getroot()
     vertices_parent = root.find(".//vertices")
     cells_parent = root.find(".//cells")
@@ -65,26 +63,21 @@ def load_mesh(xml_path: Path) -> tuple[np.ndarray, np.ndarray]:
     return vertices, triangles
 
 
-def _classify_case(name: str) -> tuple[str, str]:
+def _classify_case(name):
     if name.isdigit():
         return "base", f"N = {name}"
     if name.startswith("grid_l_"):
-        value = name.replace("grid_l_", "")
-        return "distance", f"l2 = {value}"
+        return "distance", f"l_2 = {name.replace('grid_l_', '')}"
     if name.startswith("grid_h_"):
-        value = name.replace("grid_h_", "")
-        return "height", f"h2 = {value}"
+        return "height", f"h_2 = {name.replace('grid_h_', '')}"
     return "other", name
 
 
-def discover_mesh_cases(mesh_root: Path) -> list[MeshCase]:
-    cases: list[MeshCase] = []
+def discover_mesh_cases(mesh_root):
+    cases = []
     for directory in sorted(path for path in mesh_root.iterdir() if path.is_dir()):
         name = directory.name
-        if name.isdigit():
-            prefix = f"grid_{name}"
-        else:
-            prefix = name
+        prefix = f"grid_{name}" if name.isdigit() else name
         xml_path = directory / f"{prefix}.xml"
         geo_path = directory / f"{prefix}.geo"
         facet_path = directory / f"{prefix}_facet_region.xml"
@@ -112,7 +105,7 @@ def discover_mesh_cases(mesh_root: Path) -> list[MeshCase]:
 
     family_order = {"base": 0, "distance": 1, "height": 2, "other": 3}
 
-    def family_value(case: MeshCase):
+    def sort_value(case):
         if case.family == "base":
             return case.parameters.get("N", 0.0)
         if case.family == "distance":
@@ -121,172 +114,100 @@ def discover_mesh_cases(mesh_root: Path) -> list[MeshCase]:
             return case.parameters.get("h2", 0.0)
         return case.label
 
-    return sorted(cases, key=lambda case: (family_order.get(case.family, 9), family_value(case)))
+    return sorted(cases, key=lambda case: (family_order.get(case.family, 9), sort_value(case)))
 
 
-def family_title(family: str) -> str:
-    return {
-        "base": "Базовая последовательность сеток",
-        "distance": "Изменение расстояния между цилиндрами",
-        "height": "Изменение вертикальной координаты второго цилиндра",
-    }.get(family, family)
-
-
-def group_cases(cases: list[MeshCase]) -> dict[str, list[MeshCase]]:
-    grouped: dict[str, list[MeshCase]] = {"base": [], "distance": [], "height": [], "other": []}
+def group_cases(cases):
+    grouped = {"base": [], "distance": [], "height": [], "other": []}
     for case in cases:
         grouped.setdefault(case.family, []).append(case)
     return grouped
 
 
-def format_parameters(parameters: dict[str, float]) -> list[tuple[str, str]]:
+def safe_first(cases):
+    return cases[0] if cases else None
+
+
+def family_title(family):
+    return {
+        "base": "Последовательность сеточного сгущения",
+        "distance": "Симметричные сценарии",
+        "height": "Несимметричные сценарии",
+    }.get(family, family)
+
+
+def format_geometry_parameters(parameters):
     labels = {
-        "L": "Длина канала L",
-        "H": "Высота канала H",
-        "r1": "Радиус первого цилиндра r1",
-        "l1": "Координата l1",
-        "h1": "Координата h1",
-        "r2": "Радиус второго цилиндра r2",
-        "l2": "Координата l2",
-        "h2": "Координата h2",
-        "N": "Параметр дискретизации N",
+        "L": "L",
+        "H": "H",
+        "r1": "r_1",
+        "r2": "r_2",
+        "l1": "l_1",
+        "l2": "l_2",
+        "h1": "h_1",
+        "h2": "h_2",
     }
-    ordered_keys = ["L", "H", "r1", "l1", "h1", "r2", "l2", "h2", "N"]
-    result = []
-    for key in ordered_keys:
-        if key in parameters:
-            result.append((labels[key], f"{parameters[key]:.4g}"))
-    return result
+    ordered = ["L", "H", "r1", "r2", "l1", "l2", "h1", "h2"]
+    return [(labels[key], f"{parameters[key]:.4g}") for key in ordered if key in parameters]
 
 
-def build_mesh_figure(case: MeshCase, show_nodes: bool = False, highlight_geometry: bool = True):
+def build_geometry_figure(case):
+    p = case.parameters
+    fig, ax = plt.subplots(figsize=(8.0, 3.0))
+    ax.add_patch(Rectangle((0, 0), p.get("L", 2.0), p.get("H", 1.0), fill=False, linewidth=1.5, edgecolor="#111111"))
+    ax.add_patch(Circle((p.get("l1", 0.5), p.get("h1", 0.5)), p.get("r1", 0.1875), fill=False, linewidth=1.4, edgecolor="#14532d"))
+    ax.add_patch(Circle((p.get("l2", 1.25), p.get("h2", 0.5)), p.get("r2", 0.1875), fill=False, linewidth=1.4, edgecolor="#14532d"))
+    ax.text(-0.04, 0.5 * p.get("H", 1.0), r"$\Gamma_3$", ha="right", va="center")
+    ax.text(p.get("L", 2.0) + 0.04, 0.5 * p.get("H", 1.0), r"$\Gamma_4$", ha="left", va="center")
+    ax.text(0.5 * p.get("L", 2.0), -0.05, r"$\Gamma_1$", ha="center", va="top")
+    ax.text(0.5 * p.get("L", 2.0), p.get("H", 1.0) + 0.05, r"$\Gamma_2$", ha="center", va="bottom")
+    ax.text(p.get("l1", 0.5), p.get("h1", 0.5), r"$D_1$", ha="center", va="center")
+    ax.text(p.get("l2", 1.25), p.get("h2", 0.5), r"$D_2$", ha="center", va="center")
+    ax.set_aspect("equal")
+    ax.set_xlim(-0.1, p.get("L", 2.0) + 0.1)
+    ax.set_ylim(-0.1, p.get("H", 1.0) + 0.1)
+    ax.set_axis_off()
+    return fig
+
+
+def build_mesh_figure(case, show_nodes=False):
     vertices, triangles = load_mesh(case.xml_path)
     triangulation = Triangulation(vertices[:, 0], vertices[:, 1], triangles)
-
-    fig, ax = plt.subplots(figsize=(8, 3.8))
-    ax.triplot(triangulation, color="#36506c", linewidth=0.35)
+    fig, ax = plt.subplots(figsize=(10.0, 4.2))
+    ax.triplot(triangulation, color="#334155", linewidth=0.35)
     if show_nodes:
-        ax.scatter(vertices[:, 0], vertices[:, 1], s=4, color="#b22222", alpha=0.55)
-
-    if highlight_geometry:
-        p = case.parameters
-        ax.add_patch(Rectangle((0, 0), p.get("L", 2.0), p.get("H", 1.0), fill=False, linewidth=1.2, edgecolor="#111111"))
-        ax.add_patch(Circle((p.get("l1", 0.5), p.get("h1", 0.5)), p.get("r1", 0.1875), fill=False, linewidth=1.1, edgecolor="#9a3412"))
-        ax.add_patch(Circle((p.get("l2", 1.25), p.get("h2", 0.5)), p.get("r2", 0.1875), fill=False, linewidth=1.1, edgecolor="#9a3412"))
-
+        ax.scatter(vertices[:, 0], vertices[:, 1], s=3, color="#991b1b", alpha=0.45)
     ax.set_aspect("equal")
     ax.set_xlim(vertices[:, 0].min() - 0.05, vertices[:, 0].max() + 0.05)
     ax.set_ylim(vertices[:, 1].min() - 0.05, vertices[:, 1].max() + 0.05)
     ax.set_xlabel("x")
     ax.set_ylabel("y")
-    ax.set_title(f"Сетка: {case.label}")
-    ax.grid(False)
+    ax.set_title(case.label)
     return fig
 
 
-def build_geometry_figure(case: MeshCase):
-    p = case.parameters
-    fig, ax = plt.subplots(figsize=(8, 3))
-    ax.add_patch(Rectangle((0, 0), p.get("L", 2.0), p.get("H", 1.0), fill=False, linewidth=1.5, edgecolor="#111111"))
-    ax.add_patch(Circle((p.get("l1", 0.5), p.get("h1", 0.5)), p.get("r1", 0.1875), fill=False, linewidth=1.5, edgecolor="#0f766e"))
-    ax.add_patch(Circle((p.get("l2", 1.25), p.get("h2", 0.5)), p.get("r2", 0.1875), fill=False, linewidth=1.5, edgecolor="#0f766e"))
+def build_solution_figure(solution, degree):
+    import matplotlib.pyplot as plt
+    from fenics import plot
 
-    ax.text(-0.03, 0.5 * p.get("H", 1.0), r"$\Gamma_3$", ha="right", va="center")
-    ax.text(p.get("L", 2.0) + 0.03, 0.5 * p.get("H", 1.0), r"$\Gamma_4$", ha="left", va="center")
-    ax.text(0.5 * p.get("L", 2.0), -0.05, r"$\Gamma_1$", ha="center", va="top")
-    ax.text(0.5 * p.get("L", 2.0), p.get("H", 1.0) + 0.05, r"$\Gamma_2$", ha="center", va="bottom")
-    ax.text(p.get("l1", 0.5), p.get("h1", 0.5), r"$D_1$", ha="center", va="center")
-    ax.text(p.get("l2", 1.25), p.get("h2", 0.5), r"$D_2$", ha="center", va="center")
-
+    fig, ax = plt.subplots(figsize=(10.0, 4.2))
+    plt.sca(ax)
+    contour = plot(solution, title=f"Поле функции тока, p = {degree}")
+    plt.colorbar(contour, ax=ax)
     ax.set_aspect("equal")
-    ax.set_xlim(-0.1, p.get("L", 2.0) + 0.1)
-    ax.set_ylim(-0.1, p.get("H", 1.0) + 0.1)
-    ax.set_axis_off()
-    ax.set_title("Схема расчётной области")
     return fig
 
 
-def mesh_summary_table(cases: list[MeshCase]) -> list[dict[str, str]]:
-    def fmt(value: float | None) -> str:
-        if value is None:
-            return "—"
-        return f"{value:.4g}"
-
-    rows = []
-    for case in cases:
-        rows.append(
-            {
-                "Набор": family_title(case.family),
-                "Сценарий": case.label,
-                "Вершины": f"{case.vertex_count}",
-                "Треугольники": f"{case.cell_count}",
-                "l2": fmt(case.parameters.get("l2")),
-                "h2": fmt(case.parameters.get("h2")),
-                "N": fmt(case.parameters.get("N")),
-            }
-        )
-    return rows
-
-
-def extract_code_excerpt(path: Path, start_marker: str, end_marker: str | None = None) -> str:
-    text = path.read_text(encoding="utf-8")
-    start = text.find(start_marker)
-    if start == -1:
-        return text
-    if end_marker is None:
-        return text[start:]
-    end = text.find(end_marker, start)
-    if end == -1:
-        return text[start:]
-    return text[start:end]
-
-
-def try_compute_solution(case: MeshCase):
-    try:
-        from fenics import Constant, DirichletBC, Expression, FacetNormal, Function, FunctionSpace, Measure, Mesh, MeshFunction, TestFunction, TrialFunction, assemble, dot, dx, grad, solve
-    except Exception as exc:  # pragma: no cover
-        return None, None, f"FEniCS недоступен: {exc}"
-
-    try:
-        mesh = Mesh(str(case.xml_path))
-        boundaries = MeshFunction("size_t", mesh, str(case.facet_path))
-        ds = Measure("ds", domain=mesh, subdomain_data=boundaries)
-
-        space = FunctionSpace(mesh, "CG", 2)
-        inlet = Expression("x[1]", degree=2)
-        boundary_conditions = [
-            DirichletBC(space, Constant(0.0), boundaries, 1),
-            DirichletBC(space, Constant(1.0), boundaries, 2),
-            DirichletBC(space, Constant(0.5), boundaries, 5),
-            DirichletBC(space, Constant(0.5), boundaries, 6),
-            DirichletBC(space, inlet, boundaries, 3),
-        ]
-
-        u = TrialFunction(space)
-        v = TestFunction(space)
-        a = dot(grad(u), grad(v)) * dx
-        l_form = Constant(0.0) * v * dx
-
-        solution = Function(space)
-        solve(a == l_form, solution, boundary_conditions)
-
-        n = FacetNormal(mesh)
-        flux = dot(grad(solution), n)
-        gamma_1 = assemble(flux * ds(5))
-        gamma_2 = assemble(flux * ds(6))
-
-        vertices, triangles = load_mesh(case.xml_path)
-        values = solution.compute_vertex_values(mesh)
-        triangulation = Triangulation(vertices[:, 0], vertices[:, 1], triangles)
-
-        fig, ax = plt.subplots(figsize=(8, 3.8))
-        contour = ax.tricontourf(triangulation, values, levels=20, cmap="viridis")
-        ax.triplot(triangulation, linewidth=0.15, color="white", alpha=0.35)
-        ax.set_aspect("equal")
-        ax.set_xlabel("x")
-        ax.set_ylabel("y")
-        ax.set_title("Поле функции тока, построенное по текущему solver")
-        plt.colorbar(contour, ax=ax)
-        return fig, {"Gamma1": float(gamma_1), "Gamma2": float(gamma_2)}, None
-    except Exception as exc:  # pragma: no cover
-        return None, None, f"Не удалось выполнить расчёт: {exc}"
+def build_circulation_chart(rows, x_labels, title):
+    fig, ax = plt.subplots(figsize=(8.5, 3.6))
+    x = np.arange(len(rows))
+    gamma_1 = [row["gamma_1"] for row in rows]
+    gamma_2 = [row["gamma_2"] for row in rows]
+    ax.plot(x, gamma_1, marker="o", linewidth=1.6, label=r"$\Gamma_1$")
+    ax.plot(x, gamma_2, marker="s", linewidth=1.6, label=r"$\Gamma_2$")
+    ax.set_xticks(x, x_labels)
+    ax.set_title(title)
+    ax.set_ylabel("Циркуляция")
+    ax.grid(True, axis="y", linewidth=0.3, alpha=0.5)
+    ax.legend()
+    return fig
