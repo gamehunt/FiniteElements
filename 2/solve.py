@@ -3,10 +3,19 @@ import matplotlib.pyplot as plt
 import sys
 
 def solve_problem(size, degree):
-    prefix = f'grid_{size}' if str(size).isdigit() else str(size)
+    size = str(size)
+    if size.isdigit():
+        directory = size
+        prefix = f'grid_{size}'
+    elif size.startswith('l_'):
+        directory = size
+        prefix = f'grid_{size}'
+    else:
+        directory = size
+        prefix = size
 
-    mesh = Mesh(f'mesh/{size}/{prefix}.xml')
-    boundaries = MeshFunction("size_t", mesh, f'mesh/{size}/{prefix}_facet_region.xml')
+    mesh = Mesh(f'mesh/{directory}/{prefix}.xml')
+    boundaries = MeshFunction("size_t", mesh, f'mesh/{directory}/{prefix}_facet_region.xml')
 
     ds = Measure("ds", subdomain_data=boundaries)
 
