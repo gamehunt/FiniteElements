@@ -38,6 +38,49 @@ def load_cases():
     return discover_mesh_cases(MESH_ROOT)
 
 
+def solve_selected_case(case, degree):
+    if case.family == "height":
+        return solve_problem_non_symmetrical(case.name, degree)
+    return solve_problem(case.name, degree)
+
+
+def format_scientific(value):
+    value = float(value)
+    if value == 0.0:
+        return "0"
+    exponent = f"{value:.2e}".split("e")[1]
+    mantissa = value / (10 ** int(exponent))
+    return f"{mantissa:.3f} × 10^{int(exponent)}"
+
+
+def render_metric_blocks(items):
+    columns = st.columns(len(items))
+    for column, (label, value) in zip(columns, items):
+        column.markdown(f"**{label}**")
+        column.markdown(str(value))
+
+
+def scenario_selector(title, grouped):
+    available_families = [family for family in ["base", "distance", "height"] if grouped[family]]
+    if not available_families:
+        st.info("В репозитории отсутствуют подходящие сценарии.")
+        return None
+
+    selected_family = st.radio(
+        title,
+        available_families,
+        horizontal=True,
+        format_func=family_title,
+    )
+    selected_case = st.selectbox(
+        "Сценарий",
+        grouped[selected_family],
+        format_func=lambda case: case.label,
+        key=f"{title}_{selected_family}",
+    )
+    return selected_case
+
+
 cases = load_cases()
 grouped = group_cases(cases)
 reference_case = (
@@ -54,22 +97,12 @@ slide_titles = [
     "Граничные условия и параметры задачи",
     "Расчётные сетки",
     "Конечно-элементная аппроксимация",
-    "Выбор степени полинома p",
     "Численные решения",
     "Сравнение результатов и циркуляция",
-    "Выводы",
 ]
 
 st.sidebar.title("Доклад по задаче")
 selected_slide = st.sidebar.radio("Раздел", slide_titles)
-selected_degree = st.sidebar.selectbox("Степень аппроксимации p", [1, 2, 3], index=1)
-st.sidebar.markdown("---")
-
-
-def solve_selected_case(case, degree):
-    if case.family == "height":
-        return solve_problem_non_symmetrical(case.name, degree)
-    return solve_problem(case.name, degree)
 
 
 def render_title():
@@ -80,11 +113,10 @@ def render_title():
         Потенциальное течение в плоском канале с двумя цилиндрическими препятствиями.
 
         **Основные разделы**  
-        Постановка задачи, геометрия области, граничные условия, расчётные сетки, конечно-элементная аппроксимация,
-        сравнение симметричных и несимметричных сценариев, а также анализ интегральных характеристик по границам цилиндров.
+        Постановка задачи, геометрия области, граничные условия, расчётные сетки,
+        конечно-элементная аппроксимация, численные решения и сравнение интегральных характеристик.
         """
     )
-    st.info(f"Во всех расчётных разделах используется выбранная степень аппроксимации: p = {selected_degree}.")
 
 
 def render_problem():
@@ -144,6 +176,10 @@ def render_boundary_conditions():
         st.warning("Недостаточно данных для отображения параметров задачи.")
         return
 
+    parameter_case = scenario_selector("Семейство параметров", grouped)
+    if parameter_case is None:
+        return
+
     col_left, col_right = st.columns([1.2, 1])
     with col_left:
         st.markdown(
@@ -158,16 +194,16 @@ def render_boundary_conditions():
         )
         st.markdown(
             """
-            **Сценарии расчёта**
-            - в симметричном случае варьируется параметр `l_2`;
-            - в несимметричном случае варьируется параметр `h_2`;
-            - для несимметричных конфигураций используется отдельная вычислительная ветвь
-              с основным и вспомогательными решениями, после чего строится компенсированное итоговое поле.
+            **Параметрические варианты**
+            - в симметричных сценариях изменяется положение второго цилиндра по координате `l_2`;
+            - в несимметричных сценариях изменяется положение второго цилиндра по координате `h_2`;
+            - в базовой серии варьируется параметр сеточного сгущения.
             """
         )
     with col_right:
-        st.markdown("**Геометрические параметры опорной конфигурации**")
-        for label, value in format_geometry_parameters(reference_case.parameters):
+        st.markdown("**Параметры расчётной области и цилиндров**")
+        st.caption(f"Показан набор параметров для сценария: {parameter_case.label}.")
+        for label, value in format_geometry_parameters(parameter_case.parameters):
             st.write(f"- {label} = {value}")
 
 
@@ -193,11 +229,7 @@ def render_meshes():
     st.pyplot(build_mesh_figure(selected_case, show_nodes=show_nodes), use_container_width=True)
 
     st.markdown("**Параметры выбранного сеточного сценария**")
-    metrics = scenario_metrics(selected_case)
-    info_cols = st.columns(len(metrics))
-    for column, (label, value) in zip(info_cols, metrics):
-        column.metric(label, value)
-
+    render_metric_blocks(scenario_metrics(selected_case))
     st.caption(f"Семейство сценариев: {family_title(selected_case.family)}.")
 
 
@@ -227,30 +259,12 @@ def render_fe_space():
     )
 
 
-def render_degree_choice():
-    st.header("Выбор степени полинома p = 1, 2, 3")
-    cols = st.columns(3)
-    notes = {
-        1: "Линейная аппроксимация внутри каждого элемента.",
-        2: "Квадратичная аппроксимация внутри каждого элемента.",
-        3: "Кубическая аппроксимация внутри каждого элемента.",
-    }
-    for index, degree in enumerate([1, 2, 3]):
-        cols[index].metric("Степень p", degree)
-        cols[index].write(notes[degree])
-    st.success(f"Текущее значение для численных экспериментов: p = {selected_degree}.")
-
-
-def select_scenario_groups():
-    return {
+def render_solution_slide():
+    st.header("Численные решения")
+    scenario_groups = {
         "Симметричные": grouped["distance"],
         "Несимметричные": grouped["height"],
     }
-
-
-def render_solution_slide():
-    st.header("Численные решения для симметричных и несимметричных сценариев")
-    scenario_groups = select_scenario_groups()
     scenario_kind = st.radio("Класс сценариев", list(scenario_groups.keys()), horizontal=True)
     available_cases = scenario_groups[scenario_kind]
 
@@ -258,6 +272,7 @@ def render_solution_slide():
         st.info(f"Для класса «{scenario_kind}» в репозитории не найдены расчётные сценарии.")
         return
 
+    degree = st.select_slider("Степень полинома p", options=[1, 2, 3], value=2)
     selected_case = st.selectbox("Сценарий", available_cases, format_func=lambda case: case.label)
 
     st.markdown(
@@ -265,28 +280,31 @@ def render_solution_slide():
         **Текущий расчёт**
         - класс сценариев: {scenario_kind};
         - параметр сценария: {selected_case.label};
-        - степень аппроксимации: p = {selected_degree}.
+        - порядок конечно-элементной аппроксимации: p = {degree}.
         """
     )
 
     try:
         with st.spinner("Выполняется расчёт..."):
-            result = solve_selected_case(selected_case, selected_degree)
+            result = solve_selected_case(selected_case, degree)
     except Exception as exc:
         st.warning(f"Не удалось выполнить расчёт: {exc}")
         return
 
-    st.pyplot(build_solution_figure(result["solution"], selected_degree), use_container_width=True)
+    st.pyplot(build_solution_figure(result["solution"], degree), use_container_width=True)
 
-    metric_count = 6 if selected_case.family == "height" else 5
-    metric_cols = st.columns(metric_count)
-    metric_cols[0].metric("I_1", f"{float(result['gamma1']):.6f}")
-    metric_cols[1].metric("I_2", f"{float(result['gamma2']):.6f}")
-    metric_cols[2].metric("DoF", result["dofs"])
-    metric_cols[3].metric("Сценарий", selected_case.label)
-    metric_cols[4].metric("p", selected_degree)
+    items = [
+        (r"$I_1$", format_scientific(result["gamma1"])),
+        (r"$I_2$", format_scientific(result["gamma2"])),
+    ]
     if selected_case.family == "height":
-        metric_cols[5].metric("kappa_1, kappa_2", f"{float(result['kappa1']):.4f}, {float(result['kappa2']):.4f}")
+        items.extend(
+            [
+                (r"$\kappa_1$", format_scientific(result["kappa1"])),
+                (r"$\kappa_2$", format_scientific(result["kappa2"])),
+            ]
+        )
+    render_metric_blocks(items)
 
     st.markdown(
         r"""
@@ -311,25 +329,25 @@ def render_solution_slide():
         st.markdown(
             """
             Для симметричных сценариев отображается прямое решение краевой задачи на выбранной геометрии
-            при заданной степени конечно-элементной аппроксимации.
+            при заданном порядке конечно-элементной аппроксимации.
             """
         )
 
 
-def rows_to_table(rows, first_column):
+def rows_to_table(rows, first_column, include_degree=False, include_kappa=False):
     table = []
     for row in rows:
         item = {
             first_column: row["label"],
-            "p": row["degree"],
-            "I_1": f"{row['gamma_1']:.6f}",
-            "I_2": f"{row['gamma_2']:.6f}",
-            "|I_1 - I_2|": f"{abs(row['gamma_1'] - row['gamma_2']):.6f}",
-            "DoF": row["dofs"],
+            "I_1": format_scientific(row["gamma_1"]),
+            "I_2": format_scientific(row["gamma_2"]),
+            "|I_1 - I_2|": format_scientific(abs(row["gamma_1"] - row["gamma_2"])),
         }
-        if row.get("kappa1") is not None:
-            item["kappa_1"] = f"{row['kappa1']:.6f}"
-            item["kappa_2"] = f"{row['kappa2']:.6f}"
+        if include_degree:
+            item["p"] = row["degree"]
+        if include_kappa:
+            item["kappa_1"] = format_scientific(row["kappa1"])
+            item["kappa_2"] = format_scientific(row["kappa2"])
         table.append(item)
     return table
 
@@ -375,7 +393,6 @@ def render_comparison_slide():
                             "degree": degree,
                             "gamma_1": float(result["gamma1"]),
                             "gamma_2": float(result["gamma2"]),
-                            "dofs": result["dofs"],
                             "kappa1": float(result["kappa1"]) if "kappa1" in result else None,
                             "kappa2": float(result["kappa2"]) if "kappa2" in result else None,
                         }
@@ -384,21 +401,25 @@ def render_comparison_slide():
             st.warning(f"Не удалось выполнить серию расчётов: {exc}")
             return
 
-        st.dataframe(rows_to_table(rows, "Вариант"), use_container_width=True)
+        st.dataframe(rows_to_table(rows, "Вариант", include_degree=True), use_container_width=True)
         st.pyplot(
             build_circulation_chart(rows, [row["label"] for row in rows], "Изменение интегральных характеристик при варьировании p"),
             use_container_width=True,
         )
         return
 
+    degree = st.select_slider("Степень полинома p", options=[1, 2, 3], value=2, key="comparison_degree")
+
     if mode == "Симметричные сценарии при фиксированном p":
         target_cases = grouped["distance"]
         first_column = "Симметричный сценарий"
-        chart_title = f"Интегральные характеристики в симметричных сценариях при p = {selected_degree}"
+        chart_title = f"Интегральные характеристики в симметричных сценариях при p = {degree}"
+        include_kappa = False
     else:
         target_cases = grouped["height"]
         first_column = "Несимметричный сценарий"
-        chart_title = f"Интегральные характеристики в несимметричных сценариях при p = {selected_degree}"
+        chart_title = f"Интегральные характеристики в несимметричных сценариях при p = {degree}"
+        include_kappa = True
 
     if not target_cases:
         st.info("Для выбранного класса сценариев в репозитории недостаточно данных.")
@@ -408,14 +429,13 @@ def render_comparison_slide():
     try:
         with st.spinner("Выполняется серия расчётов по сценариям..."):
             for case in target_cases:
-                result = solve_selected_case(case, selected_degree)
+                result = solve_selected_case(case, degree)
                 rows.append(
                     {
                         "label": case.label,
-                        "degree": selected_degree,
+                        "degree": degree,
                         "gamma_1": float(result["gamma1"]),
                         "gamma_2": float(result["gamma2"]),
-                        "dofs": result["dofs"],
                         "kappa1": float(result["kappa1"]) if "kappa1" in result else None,
                         "kappa2": float(result["kappa2"]) if "kappa2" in result else None,
                     }
@@ -424,33 +444,11 @@ def render_comparison_slide():
         st.warning(f"Не удалось выполнить серию расчётов: {exc}")
         return
 
-    st.dataframe(rows_to_table(rows, first_column), use_container_width=True)
-    st.pyplot(build_circulation_chart(rows, [row["label"] for row in rows], chart_title), use_container_width=True)
-
-    if mode == "Несимметричные сценарии при фиксированном p":
-        st.markdown("**Коэффициенты компенсации для итогового решения**")
-        kappa_rows = [
-            {
-                "Сценарий": row["label"],
-                "kappa_1": f"{row['kappa1']:.6f}",
-                "kappa_2": f"{row['kappa2']:.6f}",
-            }
-            for row in rows
-        ]
-        st.dataframe(kappa_rows, use_container_width=True)
-
-
-def render_conclusion():
-    st.header("Краткие содержательные выводы по задаче")
-    st.markdown(
-        """
-        - Краевая задача формулируется в канальной области с двумя внутренними цилиндрическими границами.
-        - Последовательность сеток позволяет проследить влияние дискретизации на поле функции тока и интегральные характеристики.
-        - Параметр `p = 1, 2, 3` определяет порядок конечно-элементной аппроксимации и влияет на вычисляемые значения `I_1`, `I_2`.
-        - Симметричные и несимметричные конфигурации различаются не только геометрией, но и вычислительной процедурой построения решения.
-        - Для несимметричной постановки итоговое поле формируется с использованием вспомогательных решений и коэффициентов компенсации `kappa_1`, `kappa_2`.
-        """
+    st.dataframe(
+        rows_to_table(rows, first_column, include_degree=False, include_kappa=include_kappa),
+        use_container_width=True,
     )
+    st.pyplot(build_circulation_chart(rows, [row["label"] for row in rows], chart_title), use_container_width=True)
 
 
 renderers = {
@@ -460,10 +458,8 @@ renderers = {
     "Граничные условия и параметры задачи": render_boundary_conditions,
     "Расчётные сетки": render_meshes,
     "Конечно-элементная аппроксимация": render_fe_space,
-    "Выбор степени полинома p": render_degree_choice,
     "Численные решения": render_solution_slide,
     "Сравнение результатов и циркуляция": render_comparison_slide,
-    "Выводы": render_conclusion,
 }
 
 renderers[selected_slide]()

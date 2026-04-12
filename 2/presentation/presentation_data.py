@@ -81,7 +81,7 @@ def discover_mesh_cases(mesh_root):
     cases = []
     for directory in sorted(path for path in mesh_root.iterdir() if path.is_dir()):
         name = directory.name
-        prefix = f"grid_{name}" if name.isdigit() else f"grid_{name}"
+        prefix = f"grid_{name}"
         xml_path = directory / f"{prefix}.xml"
         geo_path = directory / f"{prefix}.geo"
         facet_path = directory / f"{prefix}_facet_region.xml"
@@ -156,13 +156,16 @@ def format_geometry_parameters(parameters):
 
 
 def scenario_metrics(case):
-    metrics = [("Вершины", case.vertex_count), ("Треугольники", case.cell_count)]
+    metrics = [
+        ("Число вершин", str(case.vertex_count)),
+        ("Число треугольников", str(case.cell_count)),
+    ]
     if case.family == "base":
-        metrics.insert(0, ("N", f"{case.parameters.get('N', 0):.0f}"))
+        metrics.insert(0, ("Шаг сетки", f"{case.parameters.get('N', 0):.0f}"))
     elif case.family == "distance":
-        metrics.insert(0, ("l_2", f"{case.parameters.get('l2', 0):.4g}"))
+        metrics.insert(0, (r"$l_2$", f"{case.parameters.get('l2', 0):.4g}"))
     elif case.family == "height":
-        metrics.insert(0, ("h_2", f"{case.parameters.get('h2', 0):.4g}"))
+        metrics.insert(0, (r"$h_2$", f"{case.parameters.get('h2', 0):.4g}"))
     return metrics
 
 
