@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <dolfin xmlns:dolfin="http://fenicsproject.org">
-  <mesh_function type="uint" dim="2" size="1954">
+  <mesh_function type="uint" dim="2" size="1972">
     <entity index="0" value="7"/>
     <entity index="1" value="7"/>
     <entity index="2" value="7"/>
@@ -1955,5 +1955,23 @@
     <entity index="1951" value="7"/>
     <entity index="1952" value="7"/>
     <entity index="1953" value="7"/>
+    <entity index="1954" value="7"/>
+    <entity index="1955" value="7"/>
+    <entity index="1956" value="7"/>
+    <entity index="1957" value="7"/>
+    <entity index="1958" value="7"/>
+    <entity index="1959" value="7"/>
+    <entity index="1960" value="7"/>
+    <entity index="1961" value="7"/>
+    <entity index="1962" value="7"/>
+    <entity index="1963" value="7"/>
+    <entity index="1964" value="7"/>
+    <entity index="1965" value="7"/>
+    <entity index="1966" value="7"/>
+    <entity index="1967" value="7"/>
+    <entity index="1968" value="7"/>
+    <entity index="1969" value="7"/>
+    <entity index="1970" value="7"/>
+    <entity index="1971" value="7"/>
   </mesh_function>
 </dolfin>
