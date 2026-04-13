@@ -2,20 +2,23 @@ from fenics import *
 import matplotlib.pyplot as plt
 import sys
 
+
 def solve_problem(size, degree):
     size = str(size)
     if size.isdigit():
         directory = size
-        prefix = f'grid_{size}'
-    elif size.startswith('l_'):
+        prefix = f"grid_{size}"
+    elif size.startswith("l_"):
         directory = size
-        prefix = f'grid_{size}'
+        prefix = f"grid_{size}"
     else:
         directory = size
         prefix = size
 
-    mesh = Mesh(f'mesh/{directory}/{prefix}.xml')
-    boundaries = MeshFunction("size_t", mesh, f'mesh/{directory}/{prefix}_facet_region.xml')
+    mesh = Mesh(f"mesh/{directory}/{prefix}.xml")
+    boundaries = MeshFunction(
+        "size_t", mesh, f"mesh/{directory}/{prefix}_facet_region.xml"
+    )
 
     ds = Measure("ds", subdomain_data=boundaries)
 
@@ -25,11 +28,13 @@ def solve_problem(size, degree):
     u_1 = Expression("x[1]", degree=degree)
 
     # Граничные условия
-    bcs = [DirichletBC(V, Constant(0.0), boundaries, 1), # Низ
-           DirichletBC(V, Constant(1.0), boundaries, 2), # Верх
-           DirichletBC(V, Constant(0.5), boundaries, 5), # Цилиндр 1
-           DirichletBC(V, Constant(0.5), boundaries, 6), # Цилиндр 2
-           DirichletBC(V, u_1, boundaries, 3)] # Лево (вход)
+    bcs = [
+        DirichletBC(V, Constant(0.0), boundaries, 1),  # Низ
+        DirichletBC(V, Constant(1.0), boundaries, 2),  # Верх
+        DirichletBC(V, Constant(0.5), boundaries, 5),  # Цилиндр 1
+        DirichletBC(V, Constant(0.5), boundaries, 6),  # Цилиндр 2
+        DirichletBC(V, u_1, boundaries, 3),
+    ]  # Лево (вход)
     # На выходе естественные граничные условия (вроде)
 
     # Вариационная задача

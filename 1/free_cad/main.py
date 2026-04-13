@@ -16,20 +16,19 @@ slides = [
     "5. Верстак Assembly",
     "6. Верстак TechDraw",
     "7. Дополнительные возможности",
-    "8. Спасибо за внимание!"
+    "8. Спасибо за внимание!",
 ]
 
-slide = st.sidebar.radio(
-    "О FreeCAD:",
-    slides
-)
+slide = st.sidebar.radio("О FreeCAD:", slides)
 
 st.sidebar.markdown("---")
 
 if slide == slides[0]:
     st.markdown("<h1 style='text-align: center;'>FreeCAD</h1>", unsafe_allow_html=True)
-    st.markdown("<h3 style='text-align: center;'>Параметрическое 3D моделирование для всех</h3>",
-                unsafe_allow_html=True)
+    st.markdown(
+        "<h3 style='text-align: center;'>Параметрическое 3D моделирование для всех</h3>",
+        unsafe_allow_html=True,
+    )
 
     st.image("logo.png", use_container_width=True)
 
@@ -64,12 +63,13 @@ elif slide == slides[1]:
     st.markdown("**FreeCAD** — Полностью бесплатное и кросплатформенное ПО.")
 
     st.markdown("---")
-    
+
     st.image("interface.png", use_container_width=True)
-    
+
     st.markdown(
         "<p style='text-align: center; color: gray;'>Интерфейс программы</p>",
-        unsafe_allow_html=True)
+        unsafe_allow_html=True,
+    )
 
 elif slide == slides[2]:
     st.header("Верстаки")
@@ -88,7 +88,8 @@ elif slide == slides[2]:
 
     st.markdown(
         "<p style='text-align: center; color: gray;'>Меню верстаков</p>",
-        unsafe_allow_html=True)
+        unsafe_allow_html=True,
+    )
 
     st.markdown("""
     Так же пользователь может устанавливать сторонние верстаки в виде модулей.
@@ -110,17 +111,27 @@ elif slide == slides[3]:
     col_img1, col_img2 = st.columns(2)
     with col_img1:
         st.image("sketch.png", use_container_width=True)
-        st.markdown("<p style='text-align: center; color: gray;'>Эскиз с размерами</p>", unsafe_allow_html=True)
+        st.markdown(
+            "<p style='text-align: center; color: gray;'>Эскиз с размерами</p>",
+            unsafe_allow_html=True,
+        )
     with col_img2:
         st.image("model.png", use_container_width=True)
-        st.markdown("<p style='text-align: center; color: gray;'>Готовая 3D деталь</p>", unsafe_allow_html=True)
+        st.markdown(
+            "<p style='text-align: center; color: gray;'>Готовая 3D деталь</p>",
+            unsafe_allow_html=True,
+        )
 
-    st.info("**Параметричность**: Все изменения можно откатить в любой момент, меняя параметры в дереве модели.")
+    st.info(
+        "**Параметричность**: Все изменения можно откатить в любой момент, меняя параметры в дереве модели."
+    )
 
 elif slide == slides[4]:
     st.header("Верстак Assembly")
     st.markdown("Используется для создания сборок из спроектированных деталей.")
-    st.markdown("Также во FreeCAD есть несколько верстаков устанавливаемых отдельно: A2plus, Assembly4 и др.")
+    st.markdown(
+        "Также во FreeCAD есть несколько верстаков устанавливаемых отдельно: A2plus, Assembly4 и др."
+    )
 
     st.markdown("""
     **Суть работы:**
@@ -137,7 +148,8 @@ elif slide == slides[4]:
 
     st.markdown(
         "<p style='text-align: center; color: gray;'>Кинематическая сборка из нескольких деталей</p>",
-        unsafe_allow_html=True)
+        unsafe_allow_html=True,
+    )
 
 elif slide == slides[5]:
     st.header("Оформление чертежей (TechDraw)")
@@ -151,35 +163,46 @@ elif slide == slides[5]:
     - Экспорт в SVG или PDF для печати.
     """)
 
-
     st.image("drawing.png", use_container_width=True)
 
     st.markdown(
         "<p style='text-align: center; color: gray;'>Пример чертежа</p>",
-        unsafe_allow_html=True)
+        unsafe_allow_html=True,
+    )
 
 elif slide == slides[6]:
     st.header("Что еще умеет FreeCAD?")
 
     with st.expander("**Архитектура**", expanded=True):
-        st.write("Проектирование зданий и сооружений (стены, окна, перекрытия). Совместимость с форматом IFC.")
+        st.write(
+            "Проектирование зданий и сооружений (стены, окна, перекрытия). Совместимость с форматом IFC."
+        )
 
     with st.expander("**Метод конечных элементов**", expanded=True):
-        st.write("Прочностной анализ методом **конечных элементов**. Можно проверить, выдержит ли деталь нагрузку.")
+        st.write(
+            "Прочностной анализ методом **конечных элементов**. Можно проверить, выдержит ли деталь нагрузку."
+        )
 
     with st.expander("**Поверхности**", expanded=True):
         st.write("Создание сложных криволинейных форм, кузовов автомобилей, корпусов.")
 
     with st.expander("**ЧПУ**", expanded=True):
-        st.write("Генерация G-code для станков с численным програмным управлением на основе 3D модели.")
+        st.write(
+            "Генерация G-code для станков с численным програмным управлением на основе 3D модели."
+        )
 
     with st.expander("**Расчеты и скрипты**", expanded=True):
-        st.write("Встроенная консоль Python. Можно автоматизировать действия или писать свои макросы.")
+        st.write(
+            "Встроенная консоль Python. Можно автоматизировать действия или писать свои макросы."
+        )
 
     st.markdown("---")
 
 elif slide == slides[7]:
-    st.markdown("<h1 style='text-align: center;'>Спасибо за внимание!</h1>", unsafe_allow_html=True)
+    st.markdown(
+        "<h1 style='text-align: center;'>Спасибо за внимание!</h1>",
+        unsafe_allow_html=True,
+    )
     st.markdown("<h3 style='text-align: center;'>Вопросы?</h3>", unsafe_allow_html=True)
 
     st.markdown("---")

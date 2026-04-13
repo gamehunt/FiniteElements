@@ -86,7 +86,12 @@ def discover_mesh_cases(mesh_root):
         geo_path = directory / f"{prefix}.geo"
         facet_path = directory / f"{prefix}_facet_region.xml"
         msh_path = directory / f"{prefix}.msh"
-        if not (xml_path.exists() and geo_path.exists() and facet_path.exists() and msh_path.exists()):
+        if not (
+            xml_path.exists()
+            and geo_path.exists()
+            and facet_path.exists()
+            and msh_path.exists()
+        ):
             continue
 
         parameters = parse_geo_parameters(geo_path)
@@ -118,7 +123,9 @@ def discover_mesh_cases(mesh_root):
             return case.parameters.get("h2", 0.0)
         return case.label
 
-    return sorted(cases, key=lambda case: (family_order.get(case.family, 9), sort_value(case)))
+    return sorted(
+        cases, key=lambda case: (family_order.get(case.family, 9), sort_value(case))
+    )
 
 
 def group_cases(cases):
@@ -152,7 +159,9 @@ def format_geometry_parameters(parameters):
         "h2": "h_2",
     }
     ordered = ["L", "H", "r1", "r2", "l1", "l2", "h1", "h2"]
-    return [(labels[key], f"{parameters[key]:.4g}") for key in ordered if key in parameters]
+    return [
+        (labels[key], f"{parameters[key]:.4g}") for key in ordered if key in parameters
+    ]
 
 
 def scenario_metrics(case):
@@ -181,7 +190,9 @@ def build_geometry_figure(case):
     r1 = p.get("r1", 0.1875)
     r2 = p.get("r2", 0.1875)
 
-    ax.add_patch(Rectangle((0, 0), L, H, fill=False, linewidth=1.5, edgecolor="#111111"))
+    ax.add_patch(
+        Rectangle((0, 0), L, H, fill=False, linewidth=1.5, edgecolor="#111111")
+    )
     ax.add_patch(Circle((l1, h1), r1, fill=False, linewidth=1.4, edgecolor="#14532d"))
     ax.add_patch(Circle((l2, h2), r2, fill=False, linewidth=1.4, edgecolor="#14532d"))
 
@@ -192,29 +203,79 @@ def build_geometry_figure(case):
     ax.text(l1, h1, r"$D_1$", ha="center", va="center")
     ax.text(l2, h2, r"$D_2$", ha="center", va="center")
 
-    ax.annotate("", xy=(0.28, 0.0), xytext=(0.0, 0.0), arrowprops=dict(arrowstyle="->", linewidth=1.0))
-    ax.annotate("", xy=(0.0, 0.28), xytext=(0.0, 0.0), arrowprops=dict(arrowstyle="->", linewidth=1.0))
+    ax.annotate(
+        "",
+        xy=(0.28, 0.0),
+        xytext=(0.0, 0.0),
+        arrowprops=dict(arrowstyle="->", linewidth=1.0),
+    )
+    ax.annotate(
+        "",
+        xy=(0.0, 0.28),
+        xytext=(0.0, 0.0),
+        arrowprops=dict(arrowstyle="->", linewidth=1.0),
+    )
     ax.text(0.30, -0.01, r"$x_1$", ha="left", va="top")
     ax.text(-0.01, 0.30, r"$x_2$", ha="right", va="bottom")
 
-    ax.annotate("", xy=(0, -0.12), xytext=(L, -0.12), arrowprops=dict(arrowstyle="<->", linewidth=0.9))
+    ax.annotate(
+        "",
+        xy=(0, -0.12),
+        xytext=(L, -0.12),
+        arrowprops=dict(arrowstyle="<->", linewidth=0.9),
+    )
     ax.text(0.5 * L, -0.15, r"$L$", ha="center", va="top")
-    ax.annotate("", xy=(L + 0.1, 0), xytext=(L + 0.1, H), arrowprops=dict(arrowstyle="<->", linewidth=0.9))
+    ax.annotate(
+        "",
+        xy=(L + 0.1, 0),
+        xytext=(L + 0.1, H),
+        arrowprops=dict(arrowstyle="<->", linewidth=0.9),
+    )
     ax.text(L + 0.13, 0.5 * H, r"$H$", ha="left", va="center")
 
-    ax.annotate("", xy=(0, h1), xytext=(l1, h1), arrowprops=dict(arrowstyle="<->", linewidth=0.8, linestyle="--"))
+    ax.annotate(
+        "",
+        xy=(0, h1),
+        xytext=(l1, h1),
+        arrowprops=dict(arrowstyle="<->", linewidth=0.8, linestyle="--"),
+    )
     ax.text(0.5 * l1, h1 + 0.03, r"$l_1$", ha="center", va="bottom")
-    ax.annotate("", xy=(0, h2), xytext=(l2, h2), arrowprops=dict(arrowstyle="<->", linewidth=0.8, linestyle="--"))
+    ax.annotate(
+        "",
+        xy=(0, h2),
+        xytext=(l2, h2),
+        arrowprops=dict(arrowstyle="<->", linewidth=0.8, linestyle="--"),
+    )
     ax.text(0.5 * l2, h2 + 0.03, r"$l_2$", ha="center", va="bottom")
 
-    ax.annotate("", xy=(l1, 0), xytext=(l1, h1), arrowprops=dict(arrowstyle="<->", linewidth=0.8, linestyle="--"))
+    ax.annotate(
+        "",
+        xy=(l1, 0),
+        xytext=(l1, h1),
+        arrowprops=dict(arrowstyle="<->", linewidth=0.8, linestyle="--"),
+    )
     ax.text(l1 + 0.03, 0.5 * h1, r"$h_1$", ha="left", va="center")
-    ax.annotate("", xy=(l2, 0), xytext=(l2, h2), arrowprops=dict(arrowstyle="<->", linewidth=0.8, linestyle="--"))
+    ax.annotate(
+        "",
+        xy=(l2, 0),
+        xytext=(l2, h2),
+        arrowprops=dict(arrowstyle="<->", linewidth=0.8, linestyle="--"),
+    )
     ax.text(l2 + 0.03, 0.5 * h2, r"$h_2$", ha="left", va="center")
 
-    ax.annotate("", xy=(l1, h1), xytext=(l1 + r1, h1), arrowprops=dict(arrowstyle="<->", linewidth=0.8))
+    ax.annotate(
+        "",
+        xy=(l1, h1),
+        xytext=(l1 + r1, h1),
+        arrowprops=dict(arrowstyle="<->", linewidth=0.8),
+    )
     ax.text(l1 + 0.5 * r1, h1 + 0.03, r"$r_1$", ha="center", va="bottom")
-    ax.annotate("", xy=(l2, h2), xytext=(l2 + r2, h2), arrowprops=dict(arrowstyle="<->", linewidth=0.8))
+    ax.annotate(
+        "",
+        xy=(l2, h2),
+        xytext=(l2 + r2, h2),
+        arrowprops=dict(arrowstyle="<->", linewidth=0.8),
+    )
     ax.text(l2 + 0.5 * r2, h2 + 0.03, r"$r_2$", ha="center", va="bottom")
 
     ax.set_aspect("equal")
@@ -257,8 +318,20 @@ def build_circulation_chart(rows, x_labels, title):
     x = np.arange(len(rows))
     gamma_1 = [row["gamma_1"] for row in rows]
     gamma_2 = [row["gamma_2"] for row in rows]
-    ax.plot(x, gamma_1, marker="o", linewidth=1.6, label=r"$I_1 = \int_{\partial D_1} \partial_n \psi\, ds$")
-    ax.plot(x, gamma_2, marker="s", linewidth=1.6, label=r"$I_2 = \int_{\partial D_2} \partial_n \psi\, ds$")
+    ax.plot(
+        x,
+        gamma_1,
+        marker="o",
+        linewidth=1.6,
+        label=r"$I_1 = \int_{\partial D_1} \partial_n \psi\, ds$",
+    )
+    ax.plot(
+        x,
+        gamma_2,
+        marker="s",
+        linewidth=1.6,
+        label=r"$I_2 = \int_{\partial D_2} \partial_n \psi\, ds$",
+    )
     ax.set_xticks(x, x_labels)
     ax.set_title(title)
     ax.set_ylabel("Интегральная характеристика")
