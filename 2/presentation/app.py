@@ -61,7 +61,9 @@ def render_metric_blocks(items):
 
 
 def scenario_selector(title, grouped):
-    available_families = [family for family in ["base", "distance", "height"] if grouped[family]]
+    available_families = [
+        family for family in ["base", "distance", "height"] if grouped[family]
+    ]
     if not available_families:
         st.info("В репозитории отсутствуют подходящие сценарии.")
         return None
@@ -106,7 +108,9 @@ selected_slide = st.sidebar.radio("Раздел", slide_titles)
 
 
 def render_title():
-    st.title("Численное решение задачи обтекания области с двумя цилиндрами методом конечных элементов")
+    st.title(
+        "Численное решение задачи обтекания области с двумя цилиндрами методом конечных элементов"
+    )
     st.markdown(
         """
         **Тема доклада**  
@@ -209,7 +213,9 @@ def render_boundary_conditions():
 
 def render_meshes():
     st.header("Расчётные сетки")
-    available_families = [family for family in ["base", "distance", "height"] if grouped[family]]
+    available_families = [
+        family for family in ["base", "distance", "height"] if grouped[family]
+    ]
     if not available_families:
         st.warning("В репозитории не найдены расчётные сетки.")
         return
@@ -226,7 +232,10 @@ def render_meshes():
         format_func=lambda case: case.label,
     )
     show_nodes = st.checkbox("Показывать узлы сетки", value=False)
-    st.pyplot(build_mesh_figure(selected_case, show_nodes=show_nodes), use_container_width=True)
+    st.pyplot(
+        build_mesh_figure(selected_case, show_nodes=show_nodes),
+        use_container_width=True,
+    )
 
     st.markdown("**Параметры выбранного сеточного сценария**")
     render_metric_blocks(scenario_metrics(selected_case))
@@ -265,15 +274,21 @@ def render_solution_slide():
         "Симметричные": grouped["distance"],
         "Несимметричные": grouped["height"],
     }
-    scenario_kind = st.radio("Класс сценариев", list(scenario_groups.keys()), horizontal=True)
+    scenario_kind = st.radio(
+        "Класс сценариев", list(scenario_groups.keys()), horizontal=True
+    )
     available_cases = scenario_groups[scenario_kind]
 
     if not available_cases:
-        st.info(f"Для класса «{scenario_kind}» в репозитории не найдены расчётные сценарии.")
+        st.info(
+            f"Для класса «{scenario_kind}» в репозитории не найдены расчётные сценарии."
+        )
         return
 
     degree = st.select_slider("Степень полинома p", options=[1, 2, 3], value=2)
-    selected_case = st.selectbox("Сценарий", available_cases, format_func=lambda case: case.label)
+    selected_case = st.selectbox(
+        "Сценарий", available_cases, format_func=lambda case: case.label
+    )
 
     st.markdown(
         f"""
@@ -291,7 +306,9 @@ def render_solution_slide():
         st.warning(f"Не удалось выполнить расчёт: {exc}")
         return
 
-    st.pyplot(build_solution_figure(result["solution"], degree), use_container_width=True)
+    st.pyplot(
+        build_solution_figure(result["solution"], degree), use_container_width=True
+    )
 
     items = [
         (r"$I_1$", format_scientific(result["gamma1"])),
@@ -393,32 +410,49 @@ def render_comparison_slide():
                             "degree": degree,
                             "gamma_1": float(result["gamma1"]),
                             "gamma_2": float(result["gamma2"]),
-                            "kappa1": float(result["kappa1"]) if "kappa1" in result else None,
-                            "kappa2": float(result["kappa2"]) if "kappa2" in result else None,
+                            "kappa1": float(result["kappa1"])
+                            if "kappa1" in result
+                            else None,
+                            "kappa2": float(result["kappa2"])
+                            if "kappa2" in result
+                            else None,
                         }
                     )
         except Exception as exc:
             st.warning(f"Не удалось выполнить серию расчётов: {exc}")
             return
 
-        st.dataframe(rows_to_table(rows, "Вариант", include_degree=True), use_container_width=True)
+        st.dataframe(
+            rows_to_table(rows, "Вариант", include_degree=True),
+            use_container_width=True,
+        )
         st.pyplot(
-            build_circulation_chart(rows, [row["label"] for row in rows], "Изменение интегральных характеристик при варьировании p"),
+            build_circulation_chart(
+                rows,
+                [row["label"] for row in rows],
+                "Изменение интегральных характеристик при варьировании p",
+            ),
             use_container_width=True,
         )
         return
 
-    degree = st.select_slider("Степень полинома p", options=[1, 2, 3], value=2, key="comparison_degree")
+    degree = st.select_slider(
+        "Степень полинома p", options=[1, 2, 3], value=2, key="comparison_degree"
+    )
 
     if mode == "Симметричные сценарии при фиксированном p":
         target_cases = grouped["distance"]
         first_column = "Симметричный сценарий"
-        chart_title = f"Интегральные характеристики в симметричных сценариях при p = {degree}"
+        chart_title = (
+            f"Интегральные характеристики в симметричных сценариях при p = {degree}"
+        )
         include_kappa = False
     else:
         target_cases = grouped["height"]
         first_column = "Несимметричный сценарий"
-        chart_title = f"Интегральные характеристики в несимметричных сценариях при p = {degree}"
+        chart_title = (
+            f"Интегральные характеристики в несимметричных сценариях при p = {degree}"
+        )
         include_kappa = True
 
     if not target_cases:
@@ -436,8 +470,12 @@ def render_comparison_slide():
                         "degree": degree,
                         "gamma_1": float(result["gamma1"]),
                         "gamma_2": float(result["gamma2"]),
-                        "kappa1": float(result["kappa1"]) if "kappa1" in result else None,
-                        "kappa2": float(result["kappa2"]) if "kappa2" in result else None,
+                        "kappa1": float(result["kappa1"])
+                        if "kappa1" in result
+                        else None,
+                        "kappa2": float(result["kappa2"])
+                        if "kappa2" in result
+                        else None,
                     }
                 )
     except Exception as exc:
@@ -445,10 +483,15 @@ def render_comparison_slide():
         return
 
     st.dataframe(
-        rows_to_table(rows, first_column, include_degree=False, include_kappa=include_kappa),
+        rows_to_table(
+            rows, first_column, include_degree=False, include_kappa=include_kappa
+        ),
         use_container_width=True,
     )
-    st.pyplot(build_circulation_chart(rows, [row["label"] for row in rows], chart_title), use_container_width=True)
+    st.pyplot(
+        build_circulation_chart(rows, [row["label"] for row in rows], chart_title),
+        use_container_width=True,
+    )
 
 
 renderers = {
