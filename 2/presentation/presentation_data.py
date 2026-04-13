@@ -5,7 +5,6 @@ import xml.etree.ElementTree as ET
 
 import numpy as np
 from matplotlib import pyplot as plt
-from matplotlib.patches import Circle, Rectangle
 from matplotlib.tri import Triangulation
 
 
@@ -164,127 +163,6 @@ def format_geometry_parameters(parameters):
     ]
 
 
-def scenario_metrics(case):
-    metrics = [
-        ("Число вершин", str(case.vertex_count)),
-        ("Число треугольников", str(case.cell_count)),
-    ]
-    if case.family == "base":
-        metrics.insert(0, ("Шаг сетки", f"{case.parameters.get('N', 0):.0f}"))
-    elif case.family == "distance":
-        metrics.insert(0, (r"$l_2$", f"{case.parameters.get('l2', 0):.4g}"))
-    elif case.family == "height":
-        metrics.insert(0, (r"$h_2$", f"{case.parameters.get('h2', 0):.4g}"))
-    return metrics
-
-
-def build_geometry_figure(case):
-    p = case.parameters
-    fig, ax = plt.subplots(figsize=(10.0, 4.8))
-    L = p.get("L", 2.0)
-    H = p.get("H", 1.0)
-    l1 = p.get("l1", 0.5)
-    l2 = p.get("l2", 1.25)
-    h1 = p.get("h1", 0.5)
-    h2 = p.get("h2", 0.5)
-    r1 = p.get("r1", 0.1875)
-    r2 = p.get("r2", 0.1875)
-
-    ax.add_patch(
-        Rectangle((0, 0), L, H, fill=False, linewidth=1.5, edgecolor="#111111")
-    )
-    ax.add_patch(Circle((l1, h1), r1, fill=False, linewidth=1.4, edgecolor="#14532d"))
-    ax.add_patch(Circle((l2, h2), r2, fill=False, linewidth=1.4, edgecolor="#14532d"))
-
-    ax.text(-0.04, 0.5 * H, r"$\Gamma_3$", ha="right", va="center")
-    ax.text(L + 0.04, 0.5 * H, r"$\Gamma_4$", ha="left", va="center")
-    ax.text(0.5 * L, -0.05, r"$\Gamma_1$", ha="center", va="top")
-    ax.text(0.5 * L, H + 0.05, r"$\Gamma_2$", ha="center", va="bottom")
-    ax.text(l1, h1, r"$D_1$", ha="center", va="center")
-    ax.text(l2, h2, r"$D_2$", ha="center", va="center")
-
-    ax.annotate(
-        "",
-        xy=(0.28, 0.0),
-        xytext=(0.0, 0.0),
-        arrowprops=dict(arrowstyle="->", linewidth=1.0),
-    )
-    ax.annotate(
-        "",
-        xy=(0.0, 0.28),
-        xytext=(0.0, 0.0),
-        arrowprops=dict(arrowstyle="->", linewidth=1.0),
-    )
-    ax.text(0.30, -0.01, r"$x_1$", ha="left", va="top")
-    ax.text(-0.01, 0.30, r"$x_2$", ha="right", va="bottom")
-
-    ax.annotate(
-        "",
-        xy=(0, -0.12),
-        xytext=(L, -0.12),
-        arrowprops=dict(arrowstyle="<->", linewidth=0.9),
-    )
-    ax.text(0.5 * L, -0.15, r"$L$", ha="center", va="top")
-    ax.annotate(
-        "",
-        xy=(L + 0.1, 0),
-        xytext=(L + 0.1, H),
-        arrowprops=dict(arrowstyle="<->", linewidth=0.9),
-    )
-    ax.text(L + 0.13, 0.5 * H, r"$H$", ha="left", va="center")
-
-    ax.annotate(
-        "",
-        xy=(0, h1),
-        xytext=(l1, h1),
-        arrowprops=dict(arrowstyle="<->", linewidth=0.8, linestyle="--"),
-    )
-    ax.text(0.5 * l1, h1 + 0.03, r"$l_1$", ha="center", va="bottom")
-    ax.annotate(
-        "",
-        xy=(0, h2),
-        xytext=(l2, h2),
-        arrowprops=dict(arrowstyle="<->", linewidth=0.8, linestyle="--"),
-    )
-    ax.text(0.5 * l2, h2 + 0.03, r"$l_2$", ha="center", va="bottom")
-
-    ax.annotate(
-        "",
-        xy=(l1, 0),
-        xytext=(l1, h1),
-        arrowprops=dict(arrowstyle="<->", linewidth=0.8, linestyle="--"),
-    )
-    ax.text(l1 + 0.03, 0.5 * h1, r"$h_1$", ha="left", va="center")
-    ax.annotate(
-        "",
-        xy=(l2, 0),
-        xytext=(l2, h2),
-        arrowprops=dict(arrowstyle="<->", linewidth=0.8, linestyle="--"),
-    )
-    ax.text(l2 + 0.03, 0.5 * h2, r"$h_2$", ha="left", va="center")
-
-    ax.annotate(
-        "",
-        xy=(l1, h1),
-        xytext=(l1 + r1, h1),
-        arrowprops=dict(arrowstyle="<->", linewidth=0.8),
-    )
-    ax.text(l1 + 0.5 * r1, h1 + 0.03, r"$r_1$", ha="center", va="bottom")
-    ax.annotate(
-        "",
-        xy=(l2, h2),
-        xytext=(l2 + r2, h2),
-        arrowprops=dict(arrowstyle="<->", linewidth=0.8),
-    )
-    ax.text(l2 + 0.5 * r2, h2 + 0.03, r"$r_2$", ha="center", va="bottom")
-
-    ax.set_aspect("equal")
-    ax.set_xlim(-0.15, L + 0.25)
-    ax.set_ylim(-0.22, H + 0.22)
-    ax.set_axis_off()
-    return fig
-
-
 def build_mesh_figure(case, show_nodes=False):
     vertices, triangles = load_mesh(case.xml_path)
     triangulation = Triangulation(vertices[:, 0], vertices[:, 1], triangles)
@@ -299,6 +177,20 @@ def build_mesh_figure(case, show_nodes=False):
     ax.set_ylabel("y")
     ax.set_title(case.label)
     return fig
+
+
+def scenario_metrics(case):
+    metrics = [
+        ("Число вершин", str(case.vertex_count)),
+        ("Число треугольников", str(case.cell_count)),
+    ]
+    if case.family == "base":
+        metrics.insert(0, ("Шаг сетки", f"{case.parameters.get('N', 0):.0f}"))
+    elif case.family == "distance":
+        metrics.insert(0, (r"$l_2$", f"{case.parameters.get('l2', 0):.4g}"))
+    elif case.family == "height":
+        metrics.insert(0, (r"$h_2$", f"{case.parameters.get('h2', 0):.4g}"))
+    return metrics
 
 
 def build_solution_figure(solution, degree):
@@ -323,14 +215,14 @@ def build_circulation_chart(rows, x_labels, title):
         gamma_1,
         marker="o",
         linewidth=1.6,
-        label=r"$I_1 = \int_{\partial D_1} \partial_n \psi\, ds$",
+        label=r"$I_1 = \oint_{\gamma_1} \frac{\partial \psi}{\partial n}\, dx$",
     )
     ax.plot(
         x,
         gamma_2,
         marker="s",
         linewidth=1.6,
-        label=r"$I_2 = \int_{\partial D_2} \partial_n \psi\, ds$",
+        label=r"$I_2 = \oint_{\gamma_2} \frac{\partial \psi}{\partial n}\, dx$",
     )
     ax.set_xticks(x, x_labels)
     ax.set_title(title)

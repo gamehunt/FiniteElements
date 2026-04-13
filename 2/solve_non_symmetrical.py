@@ -3,13 +3,16 @@ import matplotlib.pyplot as plt
 import sys
 import numpy as np
 
-def solve_problem_non_symmetrical(pos, degree=2):
-    pos = str(pos).replace('grid_h_', '').replace('h_', '')
-    directory = f'h_{pos}'
-    prefix = f'grid_h_{pos}'
 
-    mesh = Mesh(f'mesh/{directory}/{prefix}.xml')
-    boundaries = MeshFunction("size_t", mesh, f'mesh/{directory}/{prefix}_facet_region.xml')
+def solve_problem_non_symmetrical(pos, degree=2):
+    pos = str(pos).replace("grid_h_", "").replace("h_", "")
+    directory = f"h_{pos}"
+    prefix = f"grid_h_{pos}"
+
+    mesh = Mesh(f"mesh/{directory}/{prefix}.xml")
+    boundaries = MeshFunction(
+        "size_t", mesh, f"mesh/{directory}/{prefix}_facet_region.xml"
+    )
     ds = Measure("ds", subdomain_data=boundaries)
 
     # Нормаль
@@ -28,7 +31,7 @@ def solve_problem_non_symmetrical(pos, degree=2):
         DirichletBC(V, Constant(1.0), boundaries, 2),  # верх
         DirichletBC(V, Constant(0.0), boundaries, 5),  # цилиндр 1
         DirichletBC(V, Constant(0.0), boundaries, 6),  # цилиндр 2
-        DirichletBC(V, u_1, boundaries, 3)             # вход
+        DirichletBC(V, u_1, boundaries, 3),  # вход
     ]
 
     u = TrialFunction(V)
@@ -49,7 +52,7 @@ def solve_problem_non_symmetrical(pos, degree=2):
         DirichletBC(V, Constant(0.0), boundaries, 2),
         DirichletBC(V, Constant(1.0), boundaries, 5),  # цилиндр 1
         DirichletBC(V, Constant(0.0), boundaries, 6),  # цилиндр 2
-        DirichletBC(V, Constant(0.0), boundaries, 3)
+        DirichletBC(V, Constant(0.0), boundaries, 3),
     ]
 
     u1 = Function(V)
@@ -64,7 +67,7 @@ def solve_problem_non_symmetrical(pos, degree=2):
         DirichletBC(V, Constant(0.0), boundaries, 2),
         DirichletBC(V, Constant(0.0), boundaries, 5),
         DirichletBC(V, Constant(1.0), boundaries, 6),  # цилиндр 2
-        DirichletBC(V, Constant(0.0), boundaries, 3)
+        DirichletBC(V, Constant(0.0), boundaries, 3),
     ]
 
     u2 = Function(V)
@@ -91,10 +94,7 @@ def solve_problem_non_symmetrical(pos, degree=2):
     # -------------------------
     # 5. РЕШАЕМ СИСТЕМУ НА kappa
     # -------------------------
-    A = np.array([
-        [c11, c21],
-        [c12, c22]
-    ])
+    A = np.array([[c11, c21], [c12, c22]])
 
     b = -np.array([c01, c02])  # хотим Γ = 0
 
@@ -106,11 +106,7 @@ def solve_problem_non_symmetrical(pos, degree=2):
     # 6. ФИНАЛЬНОЕ РЕШЕНИЕ
     # -------------------------
     u_final = Function(V)
-    u_final.vector()[:] = (
-        u0.vector()
-        + k1 * u1.vector()
-        + k2 * u2.vector()
-    )
+    u_final.vector()[:] = u0.vector() + k1 * u1.vector() + k2 * u2.vector()
 
     # левая точка - значение на границе цилиндра
     p = Point(1.25 - 0.1875, float(pos))
@@ -157,7 +153,7 @@ def main():
     degree = int(sys.argv[2]) if len(sys.argv) > 2 else 2
     result = solve_problem_non_symmetrical(pos, degree)
     print(f"kappa1 = {result['kappa1']}, kappa2 = {result['kappa2']}")
-    print('На границе второго цилиндра: psi=', result["boundary_value"])
+    print("На границе второго цилиндра: psi=", result["boundary_value"])
     print("Gamma1 =", result["gamma1"])
     print("Gamma2 =", result["gamma2"])
     plot_solution(result, title="Решение")
