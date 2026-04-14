@@ -1,0 +1,50 @@
+\documentclass[preview]{standalone}
+\usepackage{tkz-graph}
+\begin{document}
+
+\begin{figure}[ht]
+\center
+ \begin{tikzpicture}
+   \draw[->] (0,0) -- (9,0);
+   \draw[->] (0,0) -- (0,5);
+   \draw(-0.2,-0.2) node {$0$};   
+   \draw(8.5,-0.2) node {$x_1$};   
+   \draw(-0.2,4.5) node {$x_2$};      
+   \fill [blue!15] (0,0) rectangle +(8.,4.);   
+   \fill [green!15] (3,2) circle (0.75);
+   \draw[color=black!50,line width=1pt] (3,2) circle (0.75);
+   \draw(6.5,2) node {$\Omega$};
+   \draw(3.3,1.75) node {$D$};
+   \draw(4.,2) node {$\gamma$};
+   \draw[color=red,line width=1pt] (0,0) -- (0,4);
+   \draw[color=blue,line width=1pt] (0,4) -- (8,4)  (8,0) -- (0,0);
+   \draw[color=green,line width=1pt] (8,4)-- (8,0);
+   \draw(-0.2,3) node {$\Gamma_3$};
+   \draw(8.3,2) node {$\Gamma_4$};
+   \draw[--] (0,2) -- (3,2) -- (3,0); 
+   \draw(-0.2,2) node {$h$};
+   \draw(-0.2,4) node {$H$};
+   \draw(3,-0.2) node {$l$};   
+   \draw(8,-0.2) node {$L$};   
+   \draw[<->] (3,2) -- (3,2.75);
+   \draw(3.2,2.3) node {$r$};
+   \draw(4.,4.2) node {$\Gamma_2$};
+   \draw(5.,-0.2) node {$\Gamma_1$};
+ \end{tikzpicture}
+\end{figure}
+
+
+\end{document}
+
+После: convert pdf to png
+https://convertio.co/pdf-png/
+
+
+
+ 
+
+
+
+
+
+

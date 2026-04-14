@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <dolfin xmlns:dolfin="http://fenicsproject.org">
-  <mesh_function type="uint" dim="2" size="614">
+  <mesh_function type="uint" dim="2" size="602">
     <entity index="0" value="7"/>
     <entity index="1" value="7"/>
     <entity index="2" value="7"/>
@@ -603,17 +603,5 @@
     <entity index="599" value="7"/>
     <entity index="600" value="7"/>
     <entity index="601" value="7"/>
-    <entity index="602" value="7"/>
-    <entity index="603" value="7"/>
-    <entity index="604" value="7"/>
-    <entity index="605" value="7"/>
-    <entity index="606" value="7"/>
-    <entity index="607" value="7"/>
-    <entity index="608" value="7"/>
-    <entity index="609" value="7"/>
-    <entity index="610" value="7"/>
-    <entity index="611" value="7"/>
-    <entity index="612" value="7"/>
-    <entity index="613" value="7"/>
   </mesh_function>
 </dolfin>

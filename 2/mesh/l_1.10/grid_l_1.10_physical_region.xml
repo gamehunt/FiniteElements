@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <dolfin xmlns:dolfin="http://fenicsproject.org">
-  <mesh_function type="uint" dim="2" size="6944">
+  <mesh_function type="uint" dim="2" size="6968">
     <entity index="0" value="7"/>
     <entity index="1" value="7"/>
     <entity index="2" value="7"/>
@@ -6945,5 +6945,29 @@
     <entity index="6941" value="7"/>
     <entity index="6942" value="7"/>
     <entity index="6943" value="7"/>
+    <entity index="6944" value="7"/>
+    <entity index="6945" value="7"/>
+    <entity index="6946" value="7"/>
+    <entity index="6947" value="7"/>
+    <entity index="6948" value="7"/>
+    <entity index="6949" value="7"/>
+    <entity index="6950" value="7"/>
+    <entity index="6951" value="7"/>
+    <entity index="6952" value="7"/>
+    <entity index="6953" value="7"/>
+    <entity index="6954" value="7"/>
+    <entity index="6955" value="7"/>
+    <entity index="6956" value="7"/>
+    <entity index="6957" value="7"/>
+    <entity index="6958" value="7"/>
+    <entity index="6959" value="7"/>
+    <entity index="6960" value="7"/>
+    <entity index="6961" value="7"/>
+    <entity index="6962" value="7"/>
+    <entity index="6963" value="7"/>
+    <entity index="6964" value="7"/>
+    <entity index="6965" value="7"/>
+    <entity index="6966" value="7"/>
+    <entity index="6967" value="7"/>
   </mesh_function>
 </dolfin>
