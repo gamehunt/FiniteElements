@@ -64,15 +64,15 @@ def load_mesh(xml_path):
 
 def _classify_case(name):
     if name.isdigit():
-        return "base", f"N = {name}"
+        return "base", f"Базовая сетка, N = {name}"
     if name.startswith("l_"):
-        return "distance", f"l_2 = {name.replace('l_', '')}"
+        return "distance", f"Центр второго цилиндра: $l_2$ = {name.replace('l_', '')}"
     if name.startswith("h_"):
-        return "height", f"h_2 = {name.replace('h_', '')}"
+        return "height", f"Центр второго цилиндра: $h_2$ = {name.replace('h_', '')}"
     if name.startswith("grid_l_"):
-        return "distance", f"l_2 = {name.replace('grid_l_', '')}"
+        return "distance", f"Центр второго цилиндра: $l_2$ = {name.replace('grid_l_', '')}"
     if name.startswith("grid_h_"):
-        return "height", f"h_2 = {name.replace('grid_h_', '')}"
+        return "height", f"Центр второго цилиндра: $h_2$ = {name.replace('grid_h_', '')}"
     return "other", name
 
 
@@ -173,8 +173,8 @@ def build_mesh_figure(case, show_nodes=False):
     ax.set_aspect("equal")
     ax.set_xlim(vertices[:, 0].min() - 0.05, vertices[:, 0].max() + 0.05)
     ax.set_ylim(vertices[:, 1].min() - 0.05, vertices[:, 1].max() + 0.05)
-    ax.set_xlabel("x")
-    ax.set_ylabel("y")
+    ax.set_xlabel(r"$x_1$")
+    ax.set_ylabel(r"$x_2$")
     ax.set_title(case.label)
     return fig
 
@@ -201,7 +201,16 @@ def build_solution_figure(solution, degree):
     plt.sca(ax)
     contour = plot(solution, title=f"Поле функции тока, p = {degree}")
     plt.colorbar(contour, ax=ax)
+    try:
+        levels = np.linspace(solution.vector().min(), solution.vector().max(), 18)
+        isolines = plot(solution, mode="contour", levels=levels, colors="#111827")
+        isolines.set_linewidths(0.55)
+        isolines.set_alpha(0.72)
+    except Exception:
+        pass
     ax.set_aspect("equal")
+    ax.set_xlabel(r"$x_1$")
+    ax.set_ylabel(r"$x_2$")
     return fig
 
 
@@ -215,14 +224,14 @@ def build_circulation_chart(rows, x_labels, title):
         gamma_1,
         marker="o",
         linewidth=1.6,
-        label=r"$I_1 = \oint_{\gamma_1} \frac{\partial \psi}{\partial n}\, dx$",
+        label=r"$\Gamma_1 = \oint_{\gamma_1} \frac{\partial \psi}{\partial n}\, dx$",
     )
     ax.plot(
         x,
         gamma_2,
         marker="s",
         linewidth=1.6,
-        label=r"$I_2 = \oint_{\gamma_2} \frac{\partial \psi}{\partial n}\, dx$",
+        label=r"$\Gamma_2 = \oint_{\gamma_2} \frac{\partial \psi}{\partial n}\, dx$",
     )
     ax.set_xticks(x, x_labels)
     ax.set_title(title)

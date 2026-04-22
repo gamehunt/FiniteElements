@@ -34,6 +34,11 @@ def render_metric_blocks(items):
 
 def render_meshes():
     st.header("Расчётные сетки")
+    st.markdown(
+        "Для проверки устойчивости результата используются три последовательно "
+        "сгущающиеся сетки: грубая, средняя и подробная. Итоговое сгущение "
+        "составляет примерно 4 раза относительно базовой сетки."
+    )
     available_families = [
         family for family in ["base", "distance", "height"] if grouped[family]
     ]
@@ -42,13 +47,13 @@ def render_meshes():
         return
 
     selected_family = st.radio(
-        "Семейство сценариев",
+        "Группа расчетных вариантов",
         available_families,
         horizontal=True,
         format_func=family_title,
     )
     selected_case = st.selectbox(
-        "Вариант сетки",
+        "Расчетный вариант",
         grouped[selected_family],
         format_func=lambda case: case.label,
     )
@@ -58,7 +63,7 @@ def render_meshes():
         use_container_width=True,
     )
 
-    st.markdown("**Параметры выбранного сеточного сценария**")
+    st.markdown("**Параметры выбранной сетки**")
     render_metric_blocks(scenario_metrics(selected_case))
 
 

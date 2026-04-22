@@ -118,18 +118,7 @@ if menu == "Визуализации решения":
     )
 
     items = [
-        (r"$I_1$", format_scientific(result["gamma1"])),
-        (r"$I_2$", format_scientific(result["gamma2"])),
+        (r"$\Gamma_1$", format_scientific(result["gamma1"])),
+        (r"$\Gamma_2$", format_scientific(result["gamma2"])),
     ]
     render_metric_blocks(items)
-
-    st.markdown(
-        r"""
-        Здесь
-        $$
-        I_1 = \oint_{\gamma_1} \frac{\partial \psi}{\partial n}\, dx, \quad
-        I_2 = \oint_{\gamma_2} \frac{\partial \psi}{\partial n}\, dx
-        $$
-        используются как интегральные характеристики по границам цилиндров.
-        """
-    )

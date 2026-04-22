@@ -175,8 +175,8 @@ if menu == "Визуализации решения":
     )
 
     items = [
-        (r"$I_1$", format_scientific(result["gamma1"])),
-        (r"$I_2$", format_scientific(result["gamma2"])),
+        (r"$\Gamma_1$", format_scientific(result["gamma1"])),
+        (r"$\Gamma_2$", format_scientific(result["gamma2"])),
     ]
     items.extend(
         [
@@ -188,11 +188,12 @@ if menu == "Визуализации решения":
 
     st.markdown(
         r"""
-        Здесь
+        Здесь $\Gamma_1$ и $\Gamma_2$ — циркуляции на первом и втором цилиндрах:
         $$
-        I_1 = \oint_{\gamma_1} \frac{\partial \psi}{\partial n}\, dx, \quad
-        I_2 = \oint_{\gamma_2} \frac{\partial \psi}{\partial n}\, dx
+        \Gamma_1 = \oint_{\gamma_1} \frac{\partial \psi}{\partial n}\, ds, \quad
+        \Gamma_2 = \oint_{\gamma_2} \frac{\partial \psi}{\partial n}\, ds .
         $$
-        используются как интегральные характеристики по границам цилиндров.
+
+        В несимметричной постановке коэффициенты $\kappa_1$ и $\kappa_2$ компенсируют влияние смещения второго цилиндра, поэтому итоговые циркуляции на $\gamma_1$ и $\gamma_2$ остаются близкими к нулю. Полученные результаты показывают, что декомпозиция решения применима и при нарушении геометрической симметрии.
         """
     )

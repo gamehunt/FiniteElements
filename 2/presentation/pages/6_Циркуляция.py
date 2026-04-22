@@ -46,12 +46,12 @@ def rows_to_table(rows, first_column, include_degree=False, include_kappa=False)
     for row in rows:
         item = {
             first_column: row["label"],
-            "I_1": format_scientific(row["gamma_1"]),
-            "I_2": format_scientific(row["gamma_2"]),
-            "|I_1 - I_2|": format_scientific(abs(row["gamma_1"] - row["gamma_2"])),
+            r"$\Gamma_1$": format_scientific(row["gamma_1"]),
+            r"$\Gamma_2$": format_scientific(row["gamma_2"]),
+            r"$|\Gamma_1 - \Gamma_2|$": format_scientific(
+                abs(row["gamma_1"] - row["gamma_2"])
+            ),
         }
-        if include_degree:
-            item["p"] = row["degree"]
         if include_kappa:
             item["kappa_1"] = format_scientific(row["kappa1"])
             item["kappa_2"] = format_scientific(row["kappa2"])
@@ -116,7 +116,7 @@ def render_comparison_slide():
             build_circulation_chart(
                 rows,
                 [row["label"] for row in rows],
-                "Изменение интегральных характеристик при варьировании p",
+                "Изменение циркуляций при варьировании p",
             ),
             use_container_width=True,
         )
@@ -129,16 +129,12 @@ def render_comparison_slide():
     if mode == "Симметричные сценарии при фиксированном p":
         target_cases = grouped["distance"]
         first_column = "Симметричный сценарий"
-        chart_title = (
-            f"Интегральные характеристики в симметричных сценариях при p = {degree}"
-        )
+        chart_title = f"Циркуляции в симметричных сценариях при p = {degree}"
         include_kappa = False
     else:
         target_cases = grouped["height"]
         first_column = "Несимметричный сценарий"
-        chart_title = (
-            f"Интегральные характеристики в несимметричных сценариях при p = {degree}"
-        )
+        chart_title = f"Циркуляции в несимметричных сценариях при p = {degree}"
         include_kappa = True
 
     if not target_cases:
