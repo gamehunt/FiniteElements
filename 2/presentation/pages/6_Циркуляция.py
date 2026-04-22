@@ -13,8 +13,8 @@ MESH_ROOT = ROOT_DIR / "mesh"
 
 from presentation_data import (  # noqa: E402
     build_circulation_chart,
+    case_parameter_label,
     discover_mesh_cases,
-    family_title,
     group_cases,
 )
 from solve import solve_problem  # noqa: E402
@@ -41,22 +41,26 @@ def format_scientific(value):
     return f"{mantissa:.3f} × 10^{int(exponent)}"
 
 
-def rows_to_table(rows, first_column, include_degree=False, include_kappa=False):
+def rows_to_table(rows, first_column, include_kappa=False):
     table = []
     for row in rows:
         item = {
             first_column: row["label"],
-            r"$\Gamma_1$": format_scientific(row["gamma_1"]),
-            r"$\Gamma_2$": format_scientific(row["gamma_2"]),
-            r"$|\Gamma_1 - \Gamma_2|$": format_scientific(
+            "Циркуляция на первом цилиндре Γ₁": format_scientific(row["gamma_1"]),
+            "Циркуляция на втором цилиндре Γ₂": format_scientific(row["gamma_2"]),
+            "Различие |Γ₁ - Γ₂|": format_scientific(
                 abs(row["gamma_1"] - row["gamma_2"])
             ),
         }
         if include_kappa:
-            item["kappa_1"] = format_scientific(row["kappa1"])
-            item["kappa_2"] = format_scientific(row["kappa2"])
+            item["Коэффициент κ₁"] = format_scientific(row["kappa1"])
+            item["Коэффициент κ₂"] = format_scientific(row["kappa2"])
         table.append(item)
     return table
+
+
+def render_results_table(rows, first_column, include_kappa=False):
+    st.table(rows_to_table(rows, first_column, include_kappa=include_kappa))
 
 
 cases = load_cases()
@@ -66,24 +70,24 @@ grouped = group_cases(cases)
 def render_comparison_slide():
     st.header("Сравнение результатов и циркуляция")
     mode = st.selectbox(
-        "Режим сравнения",
+        "Что сравниваем",
         [
-            "По степени p для выбранного сценария",
-            "Симметричные сценарии при фиксированном p",
-            "Несимметричные сценарии при фиксированном p",
+            "Степень аппроксимации p",
+            "Симметричный случай при фиксированном p",
+            "Несимметричный случай при фиксированном p",
         ],
     )
 
-    if mode == "По степени p для выбранного сценария":
+    if mode == "Степень аппроксимации p":
         cases_for_degree = grouped["distance"] + grouped["height"]
         if not cases_for_degree:
-            st.info("Нет сценариев для сравнения по степени аппроксимации.")
+            st.info("Нет расчетных вариантов для сравнения по степени аппроксимации.")
             return
 
         selected_case = st.selectbox(
-            "Сценарий для сравнения по p",
+            "Положение второго цилиндра",
             cases_for_degree,
-            format_func=lambda case: f"{family_title(case.family)} | {case.label}",
+            format_func=case_parameter_label,
         )
         rows = []
         try:
@@ -108,10 +112,7 @@ def render_comparison_slide():
             st.warning(f"Не удалось выполнить серию расчётов: {exc}")
             return
 
-        st.dataframe(
-            rows_to_table(rows, "Вариант", include_degree=True),
-            use_container_width=True,
-        )
+        render_results_table(rows, "Степень аппроксимации")
         st.pyplot(
             build_circulation_chart(
                 rows,
@@ -126,29 +127,27 @@ def render_comparison_slide():
         "Степень полинома p", options=[1, 2, 3], value=2, key="comparison_degree"
     )
 
-    if mode == "Симметричные сценарии при фиксированном p":
+    if mode == "Симметричный случай при фиксированном p":
         target_cases = grouped["distance"]
-        first_column = "Симметричный сценарий"
-        chart_title = f"Циркуляции в симметричных сценариях при p = {degree}"
+        chart_title = f"Циркуляции в симметричном случае при p = {degree}"
         include_kappa = False
     else:
         target_cases = grouped["height"]
-        first_column = "Несимметричный сценарий"
-        chart_title = f"Циркуляции в несимметричных сценариях при p = {degree}"
+        chart_title = f"Циркуляции в несимметричном случае при p = {degree}"
         include_kappa = True
 
     if not target_cases:
-        st.info("Для выбранного класса сценариев в репозитории недостаточно данных.")
+        st.info("Для выбранного класса расчетных вариантов недостаточно данных.")
         return
 
     rows = []
     try:
-        with st.spinner("Выполняется серия расчётов по сценариям..."):
+        with st.spinner("Выполняется серия расчётов..."):
             for case in target_cases:
                 result = solve_selected_case(case, degree)
                 rows.append(
                     {
-                        "label": case.label,
+                        "label": case_parameter_label(case),
                         "degree": degree,
                         "gamma_1": float(result["gamma1"]),
                         "gamma_2": float(result["gamma2"]),
@@ -164,11 +163,8 @@ def render_comparison_slide():
         st.warning(f"Не удалось выполнить серию расчётов: {exc}")
         return
 
-    st.dataframe(
-        rows_to_table(
-            rows, first_column, include_degree=False, include_kappa=include_kappa
-        ),
-        use_container_width=True,
+    render_results_table(
+        rows, "Положение второго цилиндра", include_kappa=include_kappa
     )
     st.pyplot(
         build_circulation_chart(rows, [row["label"] for row in rows], chart_title),

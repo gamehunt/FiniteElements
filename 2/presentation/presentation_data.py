@@ -66,13 +66,19 @@ def _classify_case(name):
     if name.isdigit():
         return "base", f"Базовая сетка, N = {name}"
     if name.startswith("l_"):
-        return "distance", f"Центр второго цилиндра: $l_2$ = {name.replace('l_', '')}"
+        return "distance", f"Положение второго цилиндра: l₂ = {name.replace('l_', '')}"
     if name.startswith("h_"):
-        return "height", f"Центр второго цилиндра: $h_2$ = {name.replace('h_', '')}"
+        return "height", f"Положение второго цилиндра: h₂ = {name.replace('h_', '')}"
     if name.startswith("grid_l_"):
-        return "distance", f"Центр второго цилиндра: $l_2$ = {name.replace('grid_l_', '')}"
+        return (
+            "distance",
+            f"Положение второго цилиндра: l₂ = {name.replace('grid_l_', '')}",
+        )
     if name.startswith("grid_h_"):
-        return "height", f"Центр второго цилиндра: $h_2$ = {name.replace('grid_h_', '')}"
+        return (
+            "height",
+            f"Положение второго цилиндра: h₂ = {name.replace('grid_h_', '')}",
+        )
     return "other", name
 
 
@@ -141,9 +147,35 @@ def safe_first(cases):
 def family_title(family):
     return {
         "base": "Последовательность сеточного сгущения",
-        "distance": "Симметричные сценарии",
-        "height": "Несимметричные сценарии",
+        "distance": "Симметричный случай",
+        "height": "Несимметричный случай",
     }.get(family, family)
+
+
+def case_parameter_value(case):
+    if case.family == "distance":
+        return f"{case.parameters.get('l2', 0):.2f}"
+    if case.family == "height":
+        return f"{case.parameters.get('h2', 0):.2f}"
+    if case.family == "base":
+        return f"N = {case.parameters.get('N', 0):.0f}"
+    return case.label
+
+
+def case_parameter_label(case):
+    if case.family == "distance":
+        return f"l₂ = {case_parameter_value(case)}"
+    if case.family == "height":
+        return f"h₂ = {case_parameter_value(case)}"
+    return case_parameter_value(case)
+
+
+def case_display_title(case):
+    if case.family == "distance":
+        return f"Положение второго цилиндра: l₂ = {case_parameter_value(case)}"
+    if case.family == "height":
+        return f"Положение второго цилиндра: h₂ = {case_parameter_value(case)}"
+    return case.label
 
 
 def format_geometry_parameters(parameters):
@@ -224,14 +256,14 @@ def build_circulation_chart(rows, x_labels, title):
         gamma_1,
         marker="o",
         linewidth=1.6,
-        label=r"$\Gamma_1 = \oint_{\gamma_1} \frac{\partial \psi}{\partial n}\, dx$",
+        label=r"$\Gamma_1 = \oint_{\gamma_1} \frac{\partial \psi}{\partial n}\, ds$",
     )
     ax.plot(
         x,
         gamma_2,
         marker="s",
         linewidth=1.6,
-        label=r"$\Gamma_2 = \oint_{\gamma_2} \frac{\partial \psi}{\partial n}\, dx$",
+        label=r"$\Gamma_2 = \oint_{\gamma_2} \frac{\partial \psi}{\partial n}\, ds$",
     )
     ax.set_xticks(x, x_labels)
     ax.set_title(title)

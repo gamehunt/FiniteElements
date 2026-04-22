@@ -1,6 +1,7 @@
 import streamlit as st
 from presentation_data import (  # noqa: E402
     build_solution_figure,
+    case_parameter_value,
     group_cases,
     discover_mesh_cases,
 )
@@ -104,7 +105,7 @@ if menu == "Визуализации решения":
 
     degree = st.select_slider("Степень полинома p", options=[1, 2, 3], value=2)
     selected_case = st.selectbox(
-        "Сценарий", available_cases, format_func=lambda case: case.label
+        "Параметр l₂", available_cases, format_func=case_parameter_value
     )
 
     try:

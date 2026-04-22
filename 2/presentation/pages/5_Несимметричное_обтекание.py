@@ -1,6 +1,7 @@
 import streamlit as st
 from presentation_data import (  # noqa: E402
     build_solution_figure,
+    case_parameter_value,
     discover_mesh_cases,
     group_cases,
 )
@@ -161,7 +162,7 @@ if menu == "Визуализации решения":
 
     degree = st.select_slider("Степень полинома p", options=[1, 2, 3], value=2)
     selected_case = st.selectbox(
-        "Сценарий", available_cases, format_func=lambda case: case.label
+        "Параметр h₂", available_cases, format_func=case_parameter_value
     )
 
     try:
@@ -185,15 +186,3 @@ if menu == "Визуализации решения":
         ]
     )
     render_metric_blocks(items)
-
-    st.markdown(
-        r"""
-        Здесь $\Gamma_1$ и $\Gamma_2$ — циркуляции на первом и втором цилиндрах:
-        $$
-        \Gamma_1 = \oint_{\gamma_1} \frac{\partial \psi}{\partial n}\, ds, \quad
-        \Gamma_2 = \oint_{\gamma_2} \frac{\partial \psi}{\partial n}\, ds .
-        $$
-
-        В несимметричной постановке коэффициенты $\kappa_1$ и $\kappa_2$ компенсируют влияние смещения второго цилиндра, поэтому итоговые циркуляции на $\gamma_1$ и $\gamma_2$ остаются близкими к нулю. Полученные результаты показывают, что декомпозиция решения применима и при нарушении геометрической симметрии.
-        """
-    )
