@@ -1,0 +1,11 @@
+name: conda
+channels:
+  - conda-forge
+dependencies:
+  - gmsh
+  - streamlit
+  - matplotlib
+  - scipy
+  - pyvista
+  - fenics
+  - numpy
