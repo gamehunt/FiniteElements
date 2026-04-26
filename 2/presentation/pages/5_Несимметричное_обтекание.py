@@ -1,6 +1,7 @@
 import streamlit as st
 from presentation_data import (  # noqa: E402
     build_solution_figure,
+    case_parameter_value,
     discover_mesh_cases,
     group_cases,
 )
@@ -161,7 +162,7 @@ if menu == "Визуализации решения":
 
     degree = st.select_slider("Степень полинома p", options=[1, 2, 3], value=2)
     selected_case = st.selectbox(
-        "Сценарий", available_cases, format_func=lambda case: case.label
+        "Параметр h₂", available_cases, format_func=case_parameter_value
     )
 
     try:
@@ -175,8 +176,8 @@ if menu == "Визуализации решения":
     )
 
     items = [
-        (r"$I_1$", format_scientific(result["gamma1"])),
-        (r"$I_2$", format_scientific(result["gamma2"])),
+        (r"$\Gamma_1$", format_scientific(result["gamma1"])),
+        (r"$\Gamma_2$", format_scientific(result["gamma2"])),
     ]
     items.extend(
         [
@@ -185,14 +186,3 @@ if menu == "Визуализации решения":
         ]
     )
     render_metric_blocks(items)
-
-    st.markdown(
-        r"""
-        Здесь
-        $$
-        I_1 = \oint_{\gamma_1} \frac{\partial \psi}{\partial n}\, dx, \quad
-        I_2 = \oint_{\gamma_2} \frac{\partial \psi}{\partial n}\, dx
-        $$
-        используются как интегральные характеристики по границам цилиндров.
-        """
-    )
