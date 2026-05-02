@@ -77,7 +77,11 @@ def compute_vorticity_field(psi, gamma, vortex_area):
     
     return omega
 
-def solve_problem(size, degree, gamma=-1, max_iter=100, tol=1e-6):
+def compute_circulation_from_vorticity(psi, omega, dx):
+    circulation = assemble(conditional(lt(psi, 0.0), omega, 0.0) * dx)
+    return circulation
+
+def solve_problem(size, degree, gamma=-1.0, max_iter=100, tol=1e-6):
     size = str(size)
     if size.isdigit():
         directory = size
@@ -93,8 +97,6 @@ def solve_problem(size, degree, gamma=-1, max_iter=100, tol=1e-6):
     boundaries = MeshFunction(
         "size_t", mesh, f"grids/{directory}/{prefix}_facet_region.xml"
     )
-
-    ds = Measure("ds", subdomain_data=boundaries)
 
     V = FunctionSpace(mesh, "CG", degree)
     u_1 = Expression("x[1]", degree=degree)
@@ -145,11 +147,14 @@ def solve_problem(size, degree, gamma=-1, max_iter=100, tol=1e-6):
 
     final_vortex_area = compute_vortex_area(psi, mesh, dx)
     final_omega = compute_vorticity_field(psi, gamma, final_vortex_area)
+    final_gamma = compute_circulation_from_vorticity(psi, final_omega, dx)
+
     return {
         "mesh": mesh,
         "boundaries": boundaries,
         "solution": psi,
         "vorticity": final_omega,
+        "vorticity_gamma": final_gamma,
         "degree": degree,
         "dofs": V.dim(),
     }
@@ -186,8 +191,10 @@ def plot_solution(solution, title="Решение"):
 def main():
     size = sys.argv[1]
     degree = int(sys.argv[2])
-    result = solve_problem(size, degree)
-    plot_solution(result["solution"])
+    gamma = float(sys.argv[3])
+    result = solve_problem(size, degree, gamma=gamma)
+    print("Final gamma: ", result["vorticity_gamma"])
+    plot_solution(result["solution"], title=f'Решение: Г = {gamma}')
     plt.show()
 
 
