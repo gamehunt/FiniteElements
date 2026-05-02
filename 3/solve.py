@@ -161,6 +161,7 @@ def solve_problem(size, degree, gamma=-1.0, max_iter=100, tol=1e-6):
 
 
 def plot_solution(solution, title="Решение"):
+    plt.figure()
     c = plot(solution, title=title)
     plt.colorbar(c)
 
@@ -188,13 +189,19 @@ def plot_solution(solution, title="Решение"):
     
     return c
 
+def plot_vorticity(result, title):
+    plt.figure()
+    c = plot(result, title=title)
+    plt.colorbar(c)
+
 def main():
     size = sys.argv[1]
     degree = int(sys.argv[2])
     gamma = float(sys.argv[3])
     result = solve_problem(size, degree, gamma=gamma, tol=1e-3)
     print("Final gamma: ", result["vorticity_gamma"])
-    plot_solution(result["solution"], title=f'Решение: Г = {gamma}')
+    plot_solution(result["solution"], title=f'Функция тока: Г = {gamma}')
+    plot_vorticity(result["vorticity"], title=f'Завихрённость: Г = {gamma}')
     plt.show()
 
 
