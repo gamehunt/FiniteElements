@@ -86,7 +86,7 @@ def solve_problem(size, degree, gamma=-1.0, max_iter=100, tol=1e-6):
     if size.isdigit():
         directory = size
         prefix = f"grid_{size}"
-    elif size.startswith("l_"):
+    elif size.startswith("d_"):
         directory = size
         prefix = f"grid_{size}"
     else:
@@ -192,7 +192,7 @@ def main():
     size = sys.argv[1]
     degree = int(sys.argv[2])
     gamma = float(sys.argv[3])
-    result = solve_problem(size, degree, gamma=gamma)
+    result = solve_problem(size, degree, gamma=gamma, tol=1e-3)
     print("Final gamma: ", result["vorticity_gamma"])
     plot_solution(result["solution"], title=f'Решение: Г = {gamma}')
     plt.show()
