@@ -5,6 +5,8 @@ l1_base=1
 l2_base=2
 grids=(5 10 20)
 
+rm -rf grids/*
+
 for g in "${grids[@]}"; do
     name=grid_${g}
     par=grids/$g

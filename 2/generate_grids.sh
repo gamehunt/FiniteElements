@@ -6,6 +6,8 @@ l_base=1.25
 size_base=20
 grids=(5 10 20)
 
+rm -rf mesh/*
+
 for g in "${grids[@]}"; do
     name=grid_${g}
     par=mesh/$g

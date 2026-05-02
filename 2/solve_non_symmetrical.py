@@ -144,7 +144,21 @@ def solve_problem_non_symmetrical(pos, degree=2):
 
 def plot_solution(result, title="Решение"):
     c = plot(result["solution"], title=title)
-    plt.colorbar(c)
+    plt.colorbar(c) 
+
+    solution = result["solution"]
+
+    mesh = solution.function_space().mesh()
+    vertex_values = solution.compute_vertex_values(mesh)  # значения в вершинах
+    vertex_coords = mesh.coordinates()  # координаты вершин
+    
+    x = vertex_coords[:, 0]
+    y = vertex_coords[:, 1]
+    values = vertex_values
+    
+    plt.tricontour(x, y, values, 
+                   levels=30, 
+                   colors='black')
     return c
 
 

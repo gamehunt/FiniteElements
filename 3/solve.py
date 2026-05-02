@@ -1,5 +1,7 @@
 from fenics import *
 import matplotlib.pyplot as plt
+import numpy as np
+from scipy.interpolate import griddata
 import sys
 
 
@@ -15,29 +17,24 @@ def solve_problem(size, degree):
         directory = size
         prefix = size
 
-    mesh = Mesh(f"mesh/{directory}/{prefix}.xml")
+    mesh = Mesh(f"grids/{directory}/{prefix}.xml")
     boundaries = MeshFunction(
-        "size_t", mesh, f"mesh/{directory}/{prefix}_facet_region.xml"
+        "size_t", mesh, f"grids/{directory}/{prefix}_facet_region.xml"
     )
 
     ds = Measure("ds", subdomain_data=boundaries)
 
     V = FunctionSpace(mesh, "CG", degree)
-
-    # Условие на входе в канал
     u_1 = Expression("x[1]", degree=degree)
 
-    # Граничные условия
     bcs = [
         DirichletBC(V, Constant(0.0), boundaries, 1),  # Низ
+        DirichletBC(V, Constant(0.0), boundaries, 5),  # Низ Дуга
         DirichletBC(V, Constant(1.0), boundaries, 2),  # Верх
-        DirichletBC(V, Constant(0.5), boundaries, 5),  # Цилиндр 1
-        DirichletBC(V, Constant(0.5), boundaries, 6),  # Цилиндр 2
-        DirichletBC(V, u_1, boundaries, 3),
-    ]  # Лево (вход)
-    # На выходе естественные граничные условия (вроде)
+        DirichletBC(V, u_1, boundaries, 3), # Лево (вход)
+        # Справа (выход) - естественные
+    ]
 
-    # Вариационная задача
     u = TrialFunction(V)
     v = TestFunction(V)
     f = Constant(0.0)
@@ -51,25 +48,21 @@ def solve_problem(size, degree):
     #  Циркуляция
     n = FacetNormal(mesh)
     u_n = dot(grad(solution), n)
-    Gamma1 = assemble(u_n * ds(subdomain_data=boundaries, subdomain_id=5))
-    Gamma2 = assemble(u_n * ds(subdomain_data=boundaries, subdomain_id=6))
+    Gamma = assemble(u_n * ds(subdomain_data=boundaries, subdomain_id=5))
 
     return {
         "mesh": mesh,
         "boundaries": boundaries,
         "solution": solution,
         "degree": degree,
-        "gamma1": Gamma1,
-        "gamma2": Gamma2,
+        "gamma": Gamma,
         "dofs": V.dim(),
     }
 
 
-def plot_solution(result, title="Решение"):
-    c = plot(result["solution"], title=title)
+def plot_solution(solution, title="Решение"):
+    c = plot(solution, title=title)
     plt.colorbar(c)
-
-    solution = result["solution"]
 
     mesh = solution.function_space().mesh()
     vertex_values = solution.compute_vertex_values(mesh)  # значения в вершинах
@@ -79,9 +72,9 @@ def plot_solution(result, title="Решение"):
     y = vertex_coords[:, 1]
     values = vertex_values
     
-    plt.tricontour(x, y, values, 
-                   levels=30, 
-                   colors='black')
+    contour = plt.tricontour(x, y, values, 
+                         levels=15, 
+                         colors='black')
     return c
 
 
@@ -89,8 +82,8 @@ def main():
     size = sys.argv[1]
     degree = int(sys.argv[2])
     result = solve_problem(size, degree)
-    print(result["gamma1"], result["gamma2"])
-    plot_solution(result, title="Решение")
+    print(result["gamma"])
+    plot_solution(result["solution"], title="Решение")
     plt.show()
 
 
