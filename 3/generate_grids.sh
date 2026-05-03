@@ -7,13 +7,26 @@ grids=(5 10 20)
 
 rm -rf grids/*
 
-for g in "${grids[@]}"; do
-    name=grid_${g}
-    par=grids/$g
+generate_grid() { # (density, template, l1, l2, custom_name)
+	local density=$1	
+	local template=$2
+	local l1=$3
+	local l2=$4
+	local custom_name=$5
+	local par=grids/${density}
+	local name=grid_${density}
+	if [ ! -z "$custom_name" ]; then
+		par=grids/${custom_name}
+		name=grid_${custom_name}
+	fi
     mkdir -p $par
-    sed -e "s/%SIZE%/${g}/g" -e "s/%L1%/${l1_base}/g" -e "s/%L2%/${l2_base}/g" grid_template.geo >$par/$name.geo
+    sed -e "s/%SIZE%/${density}/g" -e "s/%L1%/${l1}/g" -e "s/%L2%/${l2}/g" ${template}.geo >$par/${name}.geo
     gmsh $par/${name}.geo -2 -format msh2 $par/${name}.msh
     dolfin-convert $par/${name}.msh $par/${name}.xml
+}
+
+for g in "${grids[@]}"; do
+	generate_grid $g "grid_template" ${l1_base} ${l2_base}
 done
 
 # r = 0.75 0.25 0.1
@@ -22,13 +35,7 @@ l1_values=(0.75 1.25 1.4)
 l2_values=(2.25 1.75 1.6)
 
 for i in "${!l1_values[@]}"; do
-    l1=${l1_values[$i]}
-    l2=${l2_values[$i]}
-	d=${d_values[$i]}
-	name=grid_d_${d}
-    par=grids/d_${d}
-    mkdir -p $par
-    sed -e "s/%SIZE%/20/g" -e "s/%L1%/${l1}/g" -e "s/%L2%/${l2}/g" grid_template.geo >$par/$name.geo
-    gmsh $par/${name}.geo -2 -format msh2 $par/${name}.msh
-    dolfin-convert $par/${name}.msh $par/${name}.xml
+	generate_grid 20 "grid_template" ${l1_values[$i]} ${l2_values[$i]} "d_${d_values[$i]}"
 done
+
+generate_grid 20 "grid_template_full" 0 0 "full"

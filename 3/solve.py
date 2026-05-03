@@ -81,22 +81,12 @@ def compute_circulation_from_vorticity(psi, omega, dx):
     circulation = assemble(conditional(lt(psi, 0.0), omega, 0.0) * dx)
     return circulation
 
-def solve_problem(size, degree, gamma=-1.0, max_iter=100, tol=1e-6):
-    size = str(size)
-    if size.isdigit():
-        directory = size
-        prefix = f"grid_{size}"
-    elif size.startswith("d_"):
-        directory = size
-        prefix = f"grid_{size}"
-    else:
-        directory = size
-        prefix = size
-
-    mesh = Mesh(f"grids/{directory}/{prefix}.xml")
+def solve_problem(grid_name, degree, gamma=-1.0, max_iter=100, tol=1e-6):
+    mesh = Mesh(f"grids/{grid_name}/grid_{grid_name}.xml")
     boundaries = MeshFunction(
-        "size_t", mesh, f"grids/{directory}/{prefix}_facet_region.xml"
+        "size_t", mesh, f"grids/{grid_name}/grid_{grid_name}_facet_region.xml"
     )
+
 
     V = FunctionSpace(mesh, "CG", degree)
     u_1 = Expression("x[1]", degree=degree)
@@ -195,10 +185,10 @@ def plot_vorticity(result, title):
     plt.colorbar(c)
 
 def main():
-    size = sys.argv[1]
+    grid_name = sys.argv[1]
     degree = int(sys.argv[2])
     gamma = float(sys.argv[3])
-    result = solve_problem(size, degree, gamma=gamma, tol=1e-3)
+    result = solve_problem(grid_name, degree, gamma=gamma, tol=1e-3)
     print("Final gamma: ", result["vorticity_gamma"])
     plot_solution(result["solution"], title=f'Функция тока: Г = {gamma}')
     plot_vorticity(result["vorticity"], title=f'Завихрённость: Г = {gamma}')
