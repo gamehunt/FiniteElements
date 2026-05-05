@@ -40,17 +40,14 @@ for g in "${grids[@]}"; do
 done
 
 # Размеры препятствия
-d_values=(1.5 0.5 0.2)
-l1_values=(0.75 1.25 1.4)
-l2_values=(2.25 1.75 1.6)
+d_values=(1.5 1.0 0.5 0.2)
+l1_values=(0.75 1.0 1.25 1.4)
+l2_values=(2.25 2.0 1.75 1.6)
 
 # Полуцилиндр разных размеров
 for i in "${!l1_values[@]}"; do
     generate_grid 20 "grid_template" ${l1_values[$i]} ${l2_values[$i]} "d_${d_values[$i]}"
 done
-
-# Цилиндр базовый
-generate_grid 20 "grid_template_full" ${l1_base} ${l2_base} "cyl_d_1.0"
 
 # Цилиндр разных размеров
 for i in "${!l1_values[@]}"; do
