@@ -17,7 +17,7 @@ with col2:
     st.image(image)
 
 st.markdown(
-    f"<br/><br/><h1 style='text-align: center;'>Численное исследование вихре-потенциального обтекания цилиндра в канале</h1>",
+    f"<br/><br/><h1 style='text-align: center;'>Численное исследование потенциального обтекания двух цилиндров в плоском канале</h1>",
     unsafe_allow_html=True,
 )
 
