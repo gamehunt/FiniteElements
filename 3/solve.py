@@ -1,4 +1,5 @@
 from fenics import *
+from ffc.compiler import compute_ir
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
@@ -177,12 +178,15 @@ def solve_problem(grid_name, degree, gamma=-1.0, max_iter=100, tol=1e-6):
         error = errornorm(psi_new, psi, "L2")
         print("Error =", error)
 
+        circulation = omega_value * vortex_area
+
         history.append(
             {
                 "iteration": k + 1,
                 "vortex_area": float(vortex_area),
                 "omega_value": float(omega_value),
                 "error": float(error),
+                "circulation": float(circulation),
             }
         )
 

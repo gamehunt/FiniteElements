@@ -30,6 +30,12 @@ TWO_VORTEX_GRIDS = [
     # "cyl_d_0.2",
 ]
 
+ONE_VORTEX_REFINEMENT_GRIDS = [
+    "5",
+    "10",
+    "20",
+]
+
 DEGREES = [1, 2, 3]
 
 ONE_VORTEX_GAMMAS = [
@@ -209,11 +215,65 @@ def run_two_vortex():
                 write_csv(out_dir / "history.csv", result["history"])
 
 
+def run_one_vortex_refinement():
+    for grid_name in ONE_VORTEX_REFINEMENT_GRIDS:
+        for gamma in ONE_VORTEX_GAMMAS:
+            for degree in DEGREES:
+                print()
+                print("=" * 80)
+                print(
+                    f"Одиночный вихрь, сгущение: grid={grid_name}, gamma={gamma:g}, degree={degree}"
+                )
+                print("=" * 80)
+
+                result = solve.solve_problem(
+                    grid_name=grid_name,
+                    degree=degree,
+                    gamma=gamma,
+                )
+
+                out_dir = (
+                    RESULTS_DIR
+                    / "one_vortex_refinement"
+                    / grid_name
+                    / f"gamma_{gamma:g}"
+                    / f"degree_{degree}"
+                )
+
+                save_one_vortex_images(result, out_dir, gamma)
+
+                summary = {
+                    "solver": "solve.py",
+                    "case": "one_vortex_refinement",
+                    "grid": grid_name,
+                    "gamma": gamma,
+                    "degree": degree,
+                    "vertices": result["mesh"].num_vertices(),
+                    "cells": result["mesh"].num_cells(),
+                    "dofs": result["dofs"],
+                    "iterations": result["iterations"],
+                    "error_final": result["error_final"],
+                    "vortex_area": result["vortex_area"],
+                    "omega_value": result["omega_value"],
+                    "circulation": float(result["vorticity_gamma"]),
+                }
+
+                write_one_row_csv(out_dir / "summary.csv", summary)
+                write_csv(out_dir / "history.csv", result["history"])
+
+
 def main():
     parser = argparse.ArgumentParser()
+
     parser.add_argument(
         "--solver",
         choices=["one", "two", "all"],
+        default="all",
+    )
+
+    parser.add_argument(
+        "--mode",
+        choices=["geometry", "refinement", "all"],
         default="all",
     )
 
@@ -222,7 +282,11 @@ def main():
     RESULTS_DIR.mkdir(exist_ok=True)
 
     if args.solver in ("one", "all"):
-        run_one_vortex()
+        if args.mode in ("geometry", "all"):
+            run_one_vortex()
+
+        if args.mode in ("refinement", "all"):
+            run_one_vortex_refinement()
 
     if args.solver in ("two", "all"):
         run_two_vortex()
