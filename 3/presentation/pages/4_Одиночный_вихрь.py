@@ -241,7 +241,7 @@ def render_refinement_summary_table(summary_table):
         r"$\varepsilon_{\mathrm{final}}$",
         r"$S_{\mathrm{final}}$",
         r"$\omega_{\mathrm{final}}$",
-        r"$\Gamma_{\mathrm{num}}$",
+        r"$\Gamma_{\mathrm{control}}$",
     ]
 
     widths = [0.7, 1.0, 1.0, 1.1, 1.2, 1.5, 1.4, 1.4, 1.4]
@@ -276,7 +276,7 @@ def render_diameter_summary_table(summary_table):
         r"$\varepsilon_{\mathrm{final}}$",
         r"$S_{\mathrm{final}}$",
         r"$\omega_{\mathrm{final}}$",
-        r"$\Gamma_{\mathrm{num}}$",
+        r"$\Gamma_{\mathrm{control}}$",
     ]
 
     widths = [0.7, 1.0, 1.0, 1.1, 1.2, 1.5, 1.4, 1.4, 1.4]
@@ -361,7 +361,7 @@ def render_diameter_degree_summary_table(summary_table):
         r"$\varepsilon_{\mathrm{final}}$",
         r"$S_{\mathrm{final}}$",
         r"$\omega_{\mathrm{final}}$",
-        r"$\Gamma_{\mathrm{num}}$",
+        r"$\Gamma_{\mathrm{control}}$",
     ]
 
     widths = [0.7, 1.2, 1.5, 1.4, 1.4, 1.4]
