@@ -10,7 +10,10 @@ menu = st.sidebar.radio(
 )
 
 if menu == "Постановка задачи":
+    pass
 
 if menu == "Декомпозиция решения":
+    pass
 
 if menu == "Конечно-элементная аппроксимация":
+    pass
