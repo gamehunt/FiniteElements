@@ -1,0 +1,2 @@
+solver,case,grid,gamma_top,gamma_bot,degree,vertices,cells,dofs,iterations,error_final,A_top,A_bot,omega_top,omega_bot,yc,rc
+solve_non_symmetrical.py,two_vortex,cyl_d_1.0,-1.0,1.0,1,2468,4656,2468,3,0.0,0.0,0.0,0.0,0.0,1.0,0.5

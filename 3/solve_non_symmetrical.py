@@ -65,8 +65,9 @@ class WakeZone(UserExpression):
         self.psi_value = psi_value
 
     def eval(self, values, x):
-        if (x[0] > self.xc and x[0] < self.xc + self.r_cyl) and  \
-           (x[1] > self.yc and x[1] < self.yc + self.r_cyl):
+        if (x[0] > self.xc and x[0] < self.xc + self.r_cyl) and (
+            x[1] > self.yc and x[1] < self.yc + self.r_cyl
+        ):
             values[0] = self.psi_value
         else:
             values[0] = 0.0
@@ -79,7 +80,9 @@ def compute_circulation_from_vorticity(psi, omega, dx):
     return assemble(conditional(lt(psi, 0.0), omega, 0.0) * dx)
 
 
-def solve_problem(grid_name, degree, gamma_top=-1.0, gamma_bot=1.0, max_iter=100, tol=1e-6):
+def solve_problem(
+    grid_name, degree, gamma_top=-1.0, gamma_bot=1.0, max_iter=100, tol=1e-6
+):
     mesh = Mesh(f"grids/{grid_name}/grid_{grid_name}.xml")
     boundaries = MeshFunction(
         "size_t", mesh, f"grids/{grid_name}/grid_{grid_name}_facet_region.xml"
@@ -112,7 +115,7 @@ def solve_problem(grid_name, degree, gamma_top=-1.0, gamma_bot=1.0, max_iter=100
     psi.vector().axpy(1.0, interpolate(wake_bot, V).vector())
 
     for k in range(max_iter):
-        print(f"\nИтерация {k+1}/{max_iter}")
+        print(f"\nИтерация {k + 1}/{max_iter}")
 
         A_top, A_bot = compute_vortex_areas(psi, mesh, dx, yc)
 
@@ -149,11 +152,7 @@ def solve_problem(grid_name, degree, gamma_top=-1.0, gamma_bot=1.0, max_iter=100
         if error < tol:
             break
 
-    return {
-        "mesh": mesh,
-        "solution": psi,
-        "vorticity": omega
-    }
+    return {"mesh": mesh, "solution": psi, "vorticity": omega}
 
 
 def plot_solution(solution, title="Решение"):
@@ -174,10 +173,12 @@ def plot_solution(solution, title="Решение"):
 
     try:
         plt.tricontourf(
-            x, y, vertex_values,
+            x,
+            y,
+            vertex_values,
             levels=[vertex_values.min(), 0],
             hatches=["///"],
-            alpha=0
+            alpha=0,
         )
         plt.tricontour(x, y, vertex_values, levels=[0], colors="red", linewidths=2)
     except:
