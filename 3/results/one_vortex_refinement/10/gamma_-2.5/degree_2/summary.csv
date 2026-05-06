@@ -1,0 +1,2 @@
+solver,case,grid,gamma,degree,vertices,cells,dofs,iterations,error_final,vortex_area,omega_value,circulation
+solve.py,one_vortex_refinement,10,-2.5,2,1409,2614,5431,14,0.0,0.1927470011212496,-12.970370410211196,-2.3800619224060076
