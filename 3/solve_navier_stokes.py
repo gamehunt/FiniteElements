@@ -21,15 +21,12 @@ def solve_navier_stokes(mesh, boundaries, nu=0.01, max_iter=50, tol=1e-6):
     w = Function(W)
     (u_k, p_k) = split(w)
 
-    # Входной профиль
-    inflow = Expression(("x[1]", "0.0"), degree=2)
-
     # Граничные условия
     bcs = [
-        DirichletBC(W.sub(0), Constant((0.0, 0.0)), boundaries, 1),  # низ
+        DirichletBC(W.sub(0).sub(1), Constant(0.0), boundaries, 1),  # низ
         DirichletBC(W.sub(0), Constant((0.0, 0.0)), boundaries, 5),  # цилиндр / дуга
-        DirichletBC(W.sub(0), Constant((0.0, 0.0)), boundaries, 2),  # верх
-        DirichletBC(W.sub(0), inflow, boundaries, 3),                # вход
+        DirichletBC(W.sub(0).sub(1), Constant(0.0), boundaries, 2),  # верх
+        DirichletBC(W.sub(0), Constant((1.0, 0.0)), boundaries, 3),  # вход
         DirichletBC(W.sub(1), Constant(0.0), boundaries, 4),         # выход
     ]
 
@@ -180,12 +177,34 @@ def compute_streamfunction(u, boundaries):
     
     # Завихренность
     omega = project(curl(u), V_psi)
+
+    print("omega min/max:",
+      omega.vector().min(),
+      omega.vector().max())
+
+    # plt.figure()
+    # c = plot(omega, title='Omega')  
+    # mesh = omega.function_space().mesh()
+    # vertex_values = omega.compute_vertex_values(mesh)
+    # vertex_coords = mesh.coordinates()
+    # x = vertex_coords[:, 0]
+    # y = vertex_coords[:, 1]
+    # values = vertex_values
+    # mpl.rcParams['hatch.color'] = 'red'
+    # plt.tricontourf(
+    #     x, y, values,
+    #     levels=[values.min(), 0],
+    #     hatches=['///'],
+    #     alpha=0,
+    #     colors='none'
+    # )
+    # plt.colorbar(c)
     
     # Пробные и тестовые функции
     psi = TrialFunction(V_psi)
     v = TestFunction(V_psi)
     
-    a = inner(grad(psi), grad(v)) * dx
+    a = dot(grad(psi), grad(v)) * dx
     L = omega * v * dx
     
     u_1 = Expression("x[1]", degree=2)
@@ -199,6 +218,9 @@ def compute_streamfunction(u, boundaries):
     # Решение
     psi_sol = Function(V_psi)
     solve(a == L, psi_sol, bc_psi)
+    print("psi min/max:",
+      psi_sol.vector().min(),
+      psi_sol.vector().max())
     
     return psi_sol
 
@@ -246,9 +268,9 @@ def main():
     print("\n=== RESULTS ===")
     print("Circulation Γ =", result["circulation"])
 
-    plot_velocity(result["velocity"], "Velocity field")
+    plot_velocity(result["velocity"], f'Velocity field (nu = {nu})')
     psi = compute_streamfunction(result["velocity"], result["boundaries"])
-    plot_streamfunction(psi)
+    plot_streamfunction(psi,  title=f'Stream function (nu = {nu})')
 
     plt.show()
 
