@@ -3,7 +3,9 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
-
+import os
+import json
+import shutil
 
 # -----------------------------
 # Решение Навье–Стокса
@@ -256,6 +258,45 @@ def plot_streamfunction(psi, title="Stream function"):
     
     return c
 
+def solve_all():
+    output_folder = "results/navier_stokes"
+    shutil.rmtree(output_folder)
+    os.makedirs(output_folder, exist_ok=True)
+
+    grid_names = ["5", "10", "20", "cyl_d_0.2", "cyl_d_0.5", "cyl_d_1.0", "cyl_d_1.5", "d_0.2", "d_0.5", "d_1.0", "d_1.5"]
+
+    nu_values = np.arange(0.01, 0.11, 0.01)
+    all_results = {}
+
+    for grid_name in grid_names:
+        for nu in nu_values:
+            result = solve_problem(grid_name, nu)
+
+            print(f"Circulation Γ = {result['circulation']}")
+
+            grid_folder = os.path.join(output_folder, grid_name)
+            os.makedirs(grid_folder, exist_ok=True)
+
+            fig1, ax1 = plt.subplots(figsize=(10, 8))
+            plot_velocity(result["velocity"], f'Velocity field (nu = {nu:.2f})')
+            velocity_filename = os.path.join(grid_folder, f"velocity_nu_{nu:.2f}.png")
+            plt.savefig(velocity_filename, dpi=300, bbox_inches='tight')
+            plt.close(fig1)
+
+            psi = compute_streamfunction(result["velocity"], result["boundaries"])
+
+            fig2, ax2 = plt.subplots(figsize=(10, 8))
+            plot_streamfunction(psi, title=f'Stream function (nu = {nu:.2f})')
+            stream_filename = os.path.join(grid_folder, f"stream_nu_{nu:.2f}.png")
+            plt.savefig(stream_filename, dpi=300, bbox_inches='tight')
+            plt.close(fig2)
+
+            all_results[f"{grid_name}_{nu:.2f}"] = float(result['circulation'])
+
+    summary_file = os.path.join(output_folder, "results_summary.json")
+    with open(summary_file, 'w', encoding='utf-8') as f:
+        json.dump(all_results, f, indent=4, ensure_ascii=False)
+
 # -----------------------------
 # MAIN
 # -----------------------------
@@ -274,6 +315,6 @@ def main():
 
     plt.show()
 
-
 if __name__ == "__main__":
+    # solve_all()
     main()
