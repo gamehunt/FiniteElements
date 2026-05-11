@@ -10,18 +10,16 @@ import shutil
 # -----------------------------
 # Решение Навье–Стокса
 # -----------------------------
-def solve_navier_stokes(mesh, boundaries, nu=0.01, max_iter=50, tol=1e-6):
+def solve_navier_stokes(mesh, boundaries, nu=0.01):
 
     # Taylor–Hood (P2-P1)
     V_el = VectorElement("CG", mesh.ufl_cell(), 2)
     Q_el = FiniteElement("CG", mesh.ufl_cell(), 1)
     W = FunctionSpace(mesh, MixedElement([V_el, Q_el]))
 
-    w = Function(W)
+    w = function(w)
     (u, p) = split(w) 
-    (v, q) = TestFunctions(W)
-
-    # (u_k, p_k) = split(w)
+    (v, q) = testfunctions(w)
 
     # Граничные условия
     bcs = [
@@ -34,7 +32,7 @@ def solve_navier_stokes(mesh, boundaries, nu=0.01, max_iter=50, tol=1e-6):
 
     f = Constant((0.0, 0.0))
 
-    # Вариацонная форма
+    # Вариационная форма
     F = (
         inner(dot(u, nabla_grad(u)), v) * dx
         + nu * inner(grad(u), grad(v)) * dx
@@ -247,13 +245,14 @@ def solve_all():
     shutil.rmtree(output_folder)
     os.makedirs(output_folder, exist_ok=True)
 
-    grid_names = ["5", "10", "20", "cyl_d_0.2", "cyl_d_0.5", "cyl_d_1.0", "cyl_d_1.5", "d_0.2", "d_0.5", "d_1.0", "d_1.5"]
+    grid_names = ["20", "d_0.2", "d_0.5", "d_1.0", "d_1.5"]
 
     nu_values = np.arange(0.01, 0.11, 0.01)
     all_results = {}
 
     for grid_name in grid_names:
         for nu in nu_values:
+            print(f'====Solving: {grid_name}, nu = {nu}====')
             result = solve_problem(grid_name, nu)
 
             print(f"Circulation Γ = {result['circulation']}")
@@ -300,5 +299,7 @@ def main():
     plt.show()
 
 if __name__ == "__main__":
-    # solve_all()
-    main()
+    if len(sys.argv) == 2 and sys.argv[1] == '--all':
+        solve_all()
+    else:
+        main()

@@ -30,9 +30,12 @@ def discover_grids():
             continue
 
         if name.startswith("cyl_d_"):
-            label = f"Цилиндр D = {name.replace('cyl_d_', '')}"
-            family = "cylinder"
+            continue
+            #label = f"Цилиндр D = {name.replace('cyl_d_', '')}"
+            #family = "cylinder"
         elif name.isdigit():
+            if int(name) < 20:
+                continue
             label = f"N = {name}"
             family = "semicylinder"
         elif name.startswith("d_"):
@@ -80,15 +83,31 @@ if menu == "Уравнения Навье-Стокса":
     st.markdown(r"""
     ### Уравнения Навье-Стокса для несжимаемой жидкости
 
-    **Стационарная форма** (∂/∂t = 0):
+    **Стационарная форма** ($\partial / \partial t = 0$):
     $$
     (\mathbf{u} \cdot \nabla) \mathbf{u} = -\frac{1}{\rho} \nabla p + \nu \nabla^2 \mathbf{u} + \mathbf{f}
     $$
 
     **Вариационная постановка**:
     $$
-    \int_{\Omega} [(\mathbf{u}_k \cdot \nabla \mathbf{u}) \cdot \mathbf{v} + \nu \nabla \mathbf{u} : \nabla \mathbf{v} - 
-    p (\nabla \cdot \mathbf{v}) - q (\nabla \cdot \mathbf{u}) - \mathbf{f} \cdot \mathbf{v}] \, d\Omega = 0
+    V_0 = \{ \mathbf{v} \in [H^1(\Omega)]^2 : \mathbf{v}(x) = 0, \ x \in \partial \Omega \}
+    $$
+
+    $$
+    Q = \{ q \in [H^1(\Omega)] : q(x) = 0, \ x \in \partial \Omega \}
+    $$
+
+    $$
+    (\mathbf{u} \cdot \nabla \mathbf{u}, \mathbf{v})
+    + \nu (\nabla \mathbf{u}, \nabla \mathbf{v})
+    - (p, \nabla \cdot \mathbf{v})
+    - (q, \nabla \cdot \mathbf{u})
+    - (\mathbf{f}, \mathbf{v})
+    = 0
+    $$
+
+    $$
+    \forall (\mathbf{v}, q) \in V_0 \times Q
     $$
 
     **Уравнение неразрывности** (сохранение массы):
@@ -105,9 +124,6 @@ if menu == "Уравнения Навье-Стокса":
     - $\nu$ - кинематическая вязкость
     - Число Рейнольдса: $Re = \frac{UL}{\nu}$
     """)
-
-    st.info(
-        "В данной работе решаются стационарные уравнения Навье-Стокса методом конечных элементов на неструктурированных сетках.")
 
 if menu == "Результаты расчетов":
     st.markdown("## Результаты расчетов")
@@ -137,7 +153,8 @@ if menu == "Результаты расчетов":
         gamma_data = json.load(f)
 
     st.markdown(f"**Параметры:** ν = {nu_selected:.2f}, сетка = {case['label']}")
-    st.markdown(f"**Циркуляция  $\Gamma$:** {gamma_data[f"{case['name']}_{nu_selected:.2f}"]:.4f}")
+    s = gamma_data[f"{case['name']}_{nu_selected:.2f}"]
+    st.markdown(f"**Циркуляция  $\\Gamma$:** {s:.4f}")
 
     nu_str = f"{nu_selected:.2f}"
     stream_path = RESULTS_ROOT / f"{case['name']}/stream_nu_{nu_str}.png"
@@ -169,66 +186,57 @@ if menu == "Программная реализация":
 
     st.markdown("""
     - **Taylor-Hood элементы** (P2-P1) - квадратичная аппроксимация скорости, линейная - давления
-    - **Метод Пикара** - итерационная линеаризация нелинейного конвективного члена
+    - В качестве нелинейного решателя используется метод Ньютона, реализованный в FEniCS
     """)
 
     st.markdown("### Основные компоненты решателя")
 
     st.markdown("""
-    **Слабая форма уравнений Навье-Стокса** (с линеаризацией Пикара):
+    **Решение уравнений Навье-Стокса**:
     """)
     st.code("""
-    from fenics import *
-    
-    # Смешанное пространство P2-P1 (Taylor-Hood)
+def solve_navier_stokes(mesh, boundaries, nu=0.01):
+    # Taylor–Hood (P2-P1)
     V_el = VectorElement("CG", mesh.ufl_cell(), 2)  # Скорость (квадратичная)
     Q_el = FiniteElement("CG", mesh.ufl_cell(), 1)  # Давление (линейная)
     W = FunctionSpace(mesh, MixedElement([V_el, Q_el]))
+
+    w = function(w)
+    (u, p) = split(w) 
+    (v, q) = testfunctions(w)
+
+    # Граничные условия
+    bcs = [
+        # Низ (boundary 1): скольжение по y
+        DirichletBC(W.sub(0).sub(1), Constant(0.0), boundaries, 1),
     
-    (u, p) = TrialFunctions(W)
-    (v, q) = TestFunctions(W)
-    (u_k, p_k) = split(w_k)  # Решение с предыдущей итерации
+        # Верх (boundary 2): скольжение по y  
+        DirichletBC(W.sub(0).sub(1), Constant(0.0), boundaries, 2),
     
+        # Вход (boundary 3): заданный профиль скорости
+        DirichletBC(W.sub(0), Constant((1.0, 0.0)), boundaries, 3),
+    
+        # Выход (boundary 4): нулевое давление
+        DirichletBC(W.sub(1), Constant(0.0), boundaries, 4),
+    
+        # Цилиндр (boundary 5): прилипание
+        DirichletBC(W.sub(0), Constant((0.0, 0.0)), boundaries, 5),
+    ]
+
+    f = Constant((0.0, 0.0))
+
     # Вариационная форма
     F = (inner(dot(u_k, nabla_grad(u)), v) * dx      # конвекция
          + nu * inner(grad(u), grad(v)) * dx         # диффузия
          - div(v) * p * dx                           # градиент давления
          - q * div(u) * dx                           # неразрывность
          - inner(f, v) * dx)                         # внешняя сила
-    
-    a = lhs(F)  # левая часть (матрица)
-    L = rhs(F)  # правая часть (вектор)
-    """, language="python")
 
-    st.markdown("""
-    **Итерационный процесс Пикара** - последовательное решение линеаризованных задач:
-    """)
-    st.code("""
-    def solve_navier_stokes(mesh, boundaries, nu=0.01, max_iter=50, tol=1e-6):
-        # ...
-    
-        w_k = Function(W)  # решение с предыдущей итерации
-    
-        for i in range(max_iter):
-            # Решение линеаризованной системы
-            solve(a == L, w, bcs)
-    
-            # Проверка сходимости по L2-норме
-            error = norm(w.vector() - w_k.vector(), 'l2')
-    
-            if error < tol:
-                print(f"Сошлось за {i+1} итераций")
-                break
-    
-            w_k.assign(w)  # Обновление решения
-    
-        return u_sol, p_sol
-    """, language="python")
+    solve(F == 0, w, bcs)
 
-    st.info("""
-    **Метод Пикара** проще метода Ньютона (не требуется вычислять якобиан), 
-    но сходится линейно. Хорошо подходит для умеренных чисел Рейнольдса.
-    """)
+    u_sol, p_sol = w.split()
+    return u_sol, p_sol
+    """, language="python")
 
     st.markdown(r"""
     **Вычисление функции тока** - решение уравнения Пуассона:
@@ -262,27 +270,5 @@ if menu == "Программная реализация":
     st.caption("""
     Функция тока позволяет визуализировать линии тока жидкости.
     """)
-
-    st.markdown("""
-    **Граничные условия** (для геометрии с цилиндром):
-    """)
-    st.code("""
-    bcs = [
-        # Низ (boundary 1): скольжение по y
-        DirichletBC(W.sub(0).sub(1), Constant(0.0), boundaries, 1),
-    
-        # Верх (boundary 2): скольжение по y  
-        DirichletBC(W.sub(0).sub(1), Constant(0.0), boundaries, 2),
-    
-        # Вход (boundary 3): заданный профиль скорости
-        DirichletBC(W.sub(0), Constant((1.0, 0.0)), boundaries, 3),
-    
-        # Выход (boundary 4): нулевое давление
-        DirichletBC(W.sub(1), Constant(0.0), boundaries, 4),
-    
-        # Цилиндр (boundary 5): прилипание
-        DirichletBC(W.sub(0), Constant((0.0, 0.0)), boundaries, 5),
-    ]
-    """, language="python")
 
     st.divider()

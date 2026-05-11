@@ -60,7 +60,7 @@ if menu == "Математическая модель":
     Равномерный поток (скорость $\bm u = \{1, 0\}$) на входе в канал
 
     $\begin{aligned}
-    \psi(\bm x) = H x_2,
+    \psi(\bm x) = x_2,
     \quad \bm x \in \Gamma_3
     \end{aligned}$
     
