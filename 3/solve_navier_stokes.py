@@ -17,11 +17,11 @@ def solve_navier_stokes(mesh, boundaries, nu=0.01, max_iter=50, tol=1e-6):
     Q_el = FiniteElement("CG", mesh.ufl_cell(), 1)
     W = FunctionSpace(mesh, MixedElement([V_el, Q_el]))
 
-    (u, p) = TrialFunctions(W)
+    w = Function(W)
+    (u, p) = split(w) 
     (v, q) = TestFunctions(W)
 
-    w = Function(W)
-    (u_k, p_k) = split(w)
+    # (u_k, p_k) = split(w)
 
     # Граничные условия
     bcs = [
@@ -34,32 +34,16 @@ def solve_navier_stokes(mesh, boundaries, nu=0.01, max_iter=50, tol=1e-6):
 
     f = Constant((0.0, 0.0))
 
-    # Нелинейная форма (Picard iteration)
+    # Вариацонная форма
     F = (
-        inner(dot(u_k, nabla_grad(u)), v) * dx
+        inner(dot(u, nabla_grad(u)), v) * dx
         + nu * inner(grad(u), grad(v)) * dx
         - div(v) * p * dx
         - q * div(u) * dx
         - inner(f, v) * dx
     )
 
-    a = lhs(F)
-    L = rhs(F)
-
-    w_k = Function(W)
-
-    for i in range(max_iter):
-        print(f"\nИтерация {i+1}/{max_iter}")
-
-        solve(a == L, w, bcs)
-
-        error = norm(w.vector() - w_k.vector(), 'l2')
-        print("Error =", error)
-
-        if error < tol:
-            break
-
-        w_k.assign(w)
+    solve(F == 0, w, bcs)
 
     u_sol, p_sol = w.split()
     return u_sol, p_sol
