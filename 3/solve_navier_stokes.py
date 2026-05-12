@@ -98,7 +98,7 @@ def plot_velocity(u, title="Velocity field", x_limits=None, y_limits=None):
                 Vv[j, i] = np.nan
     
     # Создаем график
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(12, 3))
     
     # Маскируем NaN
     mask = np.isnan(U)
@@ -109,8 +109,8 @@ def plot_velocity(u, title="Velocity field", x_limits=None, y_limits=None):
                    linewidth=1, color='b', arrowsize=1)
     
     plt.title(title)
-    plt.xlabel('x')
-    plt.ylabel('y')
+    plt.xlabel('x1')
+    plt.ylabel('x2')
     
     # Важно! Устанавливаем точные пределы
     plt.xlim(x_min, x_max)
@@ -121,9 +121,7 @@ def plot_velocity(u, title="Velocity field", x_limits=None, y_limits=None):
     ax = plt.gca()
     ax.set_aspect('equal')  # или 'equal' если хотите сохранить пропорции
     
-    plt.grid(True, alpha=0.3)
-    plt.tight_layout(pad=0.5)  # Уменьшаем отступы
-
+    plt.grid(True, alpha=0.5)
 # -----------------------------
 # Основная функция
 # -----------------------------
@@ -156,28 +154,6 @@ def compute_streamfunction(u, boundaries):
     
     # Завихренность
     omega = project(curl(u), V_psi)
-
-    print("omega min/max:",
-      omega.vector().min(),
-      omega.vector().max())
-
-    # plt.figure()
-    # c = plot(omega, title='Omega')  
-    # mesh = omega.function_space().mesh()
-    # vertex_values = omega.compute_vertex_values(mesh)
-    # vertex_coords = mesh.coordinates()
-    # x = vertex_coords[:, 0]
-    # y = vertex_coords[:, 1]
-    # values = vertex_values
-    # mpl.rcParams['hatch.color'] = 'red'
-    # plt.tricontourf(
-    #     x, y, values,
-    #     levels=[values.min(), 0],
-    #     hatches=['///'],
-    #     alpha=0,
-    #     colors='none'
-    # )
-    # plt.colorbar(c)
     
     # Пробные и тестовые функции
     psi = TrialFunction(V_psi)
@@ -197,14 +173,11 @@ def compute_streamfunction(u, boundaries):
     # Решение
     psi_sol = Function(V_psi)
     solve(a == L, psi_sol, bc_psi)
-    print("psi min/max:",
-      psi_sol.vector().min(),
-      psi_sol.vector().max())
     
     return psi_sol
 
 def plot_streamfunction(psi, title="Stream function"):
-    plt.figure()
+    plt.figure(figsize=(12, 3))
     c = plot(psi, title=title)
     plt.colorbar(c)
     
@@ -216,8 +189,8 @@ def plot_streamfunction(psi, title="Stream function"):
     y = vertex_coords[:, 1]
     values = vertex_values
     
-    plt.xlabel('x')
-    plt.ylabel('y')
+    plt.xlabel('x1')
+    plt.ylabel('x2')
     
     # Контуры функции тока
     plt.tricontour(x, y, values, levels=15, colors='black')
@@ -255,21 +228,25 @@ def solve_all():
             grid_folder = os.path.join(output_folder, grid_name)
             os.makedirs(grid_folder, exist_ok=True)
 
-            fig1, ax1 = plt.subplots(figsize=(10, 8))
             plot_velocity(result["velocity"], f'Velocity field (nu = {nu:.2f})')
             velocity_filename = os.path.join(grid_folder, f"velocity_nu_{nu:.2f}.png")
-            plt.savefig(velocity_filename, dpi=300, bbox_inches='tight')
-            plt.close(fig1)
+            plt.tight_layout()
+            plt.savefig(velocity_filename, dpi=300)
+            plt.close("all")
 
             psi = compute_streamfunction(result["velocity"], result["boundaries"])
 
-            fig2, ax2 = plt.subplots(figsize=(10, 8))
             plot_streamfunction(psi, title=f'Stream function (nu = {nu:.2f})')
             stream_filename = os.path.join(grid_folder, f"stream_nu_{nu:.2f}.png")
-            plt.savefig(stream_filename, dpi=300, bbox_inches='tight')
-            plt.close(fig2)
+            plt.tight_layout()
+            plt.savefig(stream_filename, dpi=300)
+            plt.close("all")
 
-            all_results[f"{grid_name}_{nu:.2f}"] = float(result['circulation'])
+            all_results[f"{grid_name}_{nu:.2f}"] = {
+                    "circulation": result["circulation"],
+                    "psi_min": psi.vector().min(),
+                    "reinolds": 2 / nu
+            }
 
     summary_file = os.path.join(output_folder, "results_summary.json")
     with open(summary_file, 'w', encoding='utf-8') as f:

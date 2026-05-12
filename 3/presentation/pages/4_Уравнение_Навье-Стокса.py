@@ -1,5 +1,6 @@
 import streamlit as st
 import numpy as np
+import pandas as pd
 from pathlib import Path
 import json
 
@@ -75,11 +76,14 @@ menu = st.sidebar.radio(
     (
         "Уравнения Навье-Стокса",
         "Программная реализация",
+        "Известные результаты",
         "Результаты расчетов",
     ),
 )
 
-if menu == "Уравнения Навье-Стокса":
+if menu == "Известные результаты":
+    st.image("presentation/known.png")
+elif menu == "Уравнения Навье-Стокса":
     st.markdown(r"""
     ### Уравнения Навье-Стокса для несжимаемой жидкости
 
@@ -98,7 +102,7 @@ if menu == "Уравнения Навье-Стокса":
     u_y = 0, \ \bm{x} \in \Gamma_1, \Gamma_2
     $$
     $$
-    \bm{u} = (0,0), \ x \in \Gamma_5
+    \bm{u} = (0,0), \ \bm{x} \ \text{на границе цилиндра}
     $$
     $$
     \bm{u} = (1,0), \ \bm{x} \in \Gamma_3
@@ -175,34 +179,33 @@ if menu == "Результаты расчетов":
     with open(RESULTS_ROOT / "results_summary.json", 'r') as f:
         gamma_data = json.load(f)
 
-    st.markdown(f"**Параметры:** ν = {nu_selected:.2f}, сетка = {case['label']}")
     s = gamma_data[f"{case['name']}_{nu_selected:.2f}"]
-    st.markdown(f"**Циркуляция  $\\Gamma$:** {s:.4f}")
+    df = pd.DataFrame({
+        "Параметр": [r"$\Gamma$", r"$Re$", r"$\psi_{min}$"],
+        "Значение": [
+            f"{s['circulation']:.4f}",
+            f"{s['reinolds']:.4f}",
+            f"{s['psi_min']:.4f}"
+        ]
+    })
+    
+    st.table(df)
 
     nu_str = f"{nu_selected:.2f}"
     stream_path = RESULTS_ROOT / f"{case['name']}/stream_nu_{nu_str}.png"
     vel_path = RESULTS_ROOT / f"{case['name']}/velocity_nu_{nu_str}.png"
 
-    col1, col2 = st.columns(2)
+    st.markdown("**Функция тока**")
+    try:
+        st.image(stream_path, use_container_width=True)
+    except FileNotFoundError:
+        st.warning(f"Изображение не найдено: {stream_path}")
 
-    with col1:
-        st.markdown("**Функция тока**")
-    with col2:
-        st.markdown("**Поле скорости**")
-
-    col1, col2 = st.columns(2, vertical_alignment='center')
-
-    with col1:
-        try:
-            st.image(stream_path, use_container_width=True)
-        except FileNotFoundError:
-            st.warning(f"Изображение не найдено: {stream_path}")
-
-    with col2:
-        try:
-            st.image(vel_path, use_container_width=True)
-        except FileNotFoundError:
-            st.warning(f"Изображение не найдено: {vel_path}")
+    st.markdown("**Поле скорости**")
+    try:
+        st.image(vel_path, use_container_width=True)
+    except FileNotFoundError:
+        st.warning(f"Изображение не найдено: {vel_path}")
 
 if menu == "Программная реализация":
     st.markdown("## Программная реализация решателя")
@@ -254,7 +257,7 @@ def solve_navier_stokes(mesh, boundaries, nu=0.01):
     **Вычисление функции тока** - решение уравнения Пуассона:
 
     $$
-        \nabla^2 \psi = -\omega, \quad \omega = \nabla \times \mathbf{u}
+        \nabla^2 \psi = -\omega, \quad \omega = \operatorname{rot}(\bm{u})
     $$
     """)
     st.code("""
@@ -278,9 +281,3 @@ def solve_navier_stokes(mesh, boundaries, nu=0.01):
     
         return psi_sol
     """, language="python")
-
-    st.caption("""
-    Функция тока позволяет визуализировать линии тока жидкости.
-    """)
-
-    st.divider()
