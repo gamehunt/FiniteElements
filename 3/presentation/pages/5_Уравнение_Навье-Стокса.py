@@ -197,44 +197,33 @@ if menu == "Программная реализация":
     st.code("""
 def solve_navier_stokes(mesh, boundaries, nu=0.01):
     # Taylor–Hood (P2-P1)
-    V_el = VectorElement("CG", mesh.ufl_cell(), 2)  # Скорость (квадратичная)
-    Q_el = FiniteElement("CG", mesh.ufl_cell(), 1)  # Давление (линейная)
-    W = FunctionSpace(mesh, MixedElement([V_el, Q_el]))
+    U = VectorElement("Lagrange", mesh.ufl_cell(), 2)
+    P = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
+    V = FunctionSpace(mesh, U*P)
 
-    w = function(w)
+    w = Function(V)
     (u, p) = split(w) 
-    (v, q) = testfunctions(w)
+    (v, q) = TestFunctions(V)
 
     # Граничные условия
     bcs = [
-        # Низ (boundary 1): скольжение по y
-        DirichletBC(W.sub(0).sub(1), Constant(0.0), boundaries, 1),
-    
-        # Верх (boundary 2): скольжение по y  
-        DirichletBC(W.sub(0).sub(1), Constant(0.0), boundaries, 2),
-    
-        # Вход (boundary 3): заданный профиль скорости
-        DirichletBC(W.sub(0), Constant((1.0, 0.0)), boundaries, 3),
-    
-        # Выход (boundary 4): нулевое давление
-        DirichletBC(W.sub(1), Constant(0.0), boundaries, 4),
-    
-        # Цилиндр (boundary 5): прилипание
-        DirichletBC(W.sub(0), Constant((0.0, 0.0)), boundaries, 5),
+        DirichletBC(V.sub(0).sub(1), Constant((0)), boundaries, 1),  # низ
+        DirichletBC(V.sub(0), Constant((0,0)), boundaries, 5),       # цилиндр / дуга
+        DirichletBC(V.sub(0).sub(1), Constant((0)), boundaries, 2),  # верх
+        DirichletBC(V.sub(0), Constant((1,0)), boundaries, 3),       # вход
     ]
 
-    f = Constant((0.0, 0.0))
-
     # Вариационная форма
-    F = (inner(dot(u_k, nabla_grad(u)), v) * dx      # конвекция
-         + nu * inner(grad(u), grad(v)) * dx         # диффузия
-         - div(v) * p * dx                           # градиент давления
-         - q * div(u) * dx                           # неразрывность
-         - inner(f, v) * dx)                         # внешняя сила
+    F = (
+        inner(dot(u, nabla_grad(u)), v) * dx # Конвекция
+        + nu * inner(grad(u), grad(v)) * dx  # Диффущия
+        - div(v) * p * dx # Градиент давления
+        + q * div(u) * dx # Неразрывность
+    )
 
     solve(F == 0, w, bcs)
 
-    u_sol, p_sol = w.split()
+    u_sol, p_sol = w.split(True)
     return u_sol, p_sol
     """, language="python")
 

@@ -11,39 +11,34 @@ import shutil
 # Решение Навье–Стокса
 # -----------------------------
 def solve_navier_stokes(mesh, boundaries, nu=0.01):
-
     # Taylor–Hood (P2-P1)
-    V_el = VectorElement("CG", mesh.ufl_cell(), 2)
-    Q_el = FiniteElement("CG", mesh.ufl_cell(), 1)
-    W = FunctionSpace(mesh, MixedElement([V_el, Q_el]))
+    U = VectorElement("Lagrange", mesh.ufl_cell(), 2)
+    P = FiniteElement("Lagrange", mesh.ufl_cell(), 1)
+    V = FunctionSpace(mesh, U*P)
 
-    w = function(w)
+    w = Function(V)
     (u, p) = split(w) 
-    (v, q) = testfunctions(w)
+    (v, q) = TestFunctions(V)
 
     # Граничные условия
     bcs = [
-        DirichletBC(W.sub(0).sub(1), Constant(0.0), boundaries, 1),  # низ
-        DirichletBC(W.sub(0), Constant((0.0, 0.0)), boundaries, 5),  # цилиндр / дуга
-        DirichletBC(W.sub(0).sub(1), Constant(0.0), boundaries, 2),  # верх
-        DirichletBC(W.sub(0), Constant((1.0, 0.0)), boundaries, 3),  # вход
-        DirichletBC(W.sub(1), Constant(0.0), boundaries, 4),         # выход
+        DirichletBC(V.sub(0).sub(1), Constant((0)), boundaries, 1),  # низ
+        DirichletBC(V.sub(0), Constant((0,0)), boundaries, 5),       # цилиндр / дуга
+        DirichletBC(V.sub(0).sub(1), Constant((0)), boundaries, 2),  # верх
+        DirichletBC(V.sub(0), Constant((1,0)), boundaries, 3),       # вход
     ]
-
-    f = Constant((0.0, 0.0))
 
     # Вариационная форма
     F = (
         inner(dot(u, nabla_grad(u)), v) * dx
         + nu * inner(grad(u), grad(v)) * dx
         - div(v) * p * dx
-        - q * div(u) * dx
-        - inner(f, v) * dx
+        + q * div(u) * dx
     )
 
     solve(F == 0, w, bcs)
 
-    u_sol, p_sol = w.split()
+    u_sol, p_sol = w.split(True)
     return u_sol, p_sol
 
 

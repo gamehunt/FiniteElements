@@ -256,6 +256,9 @@ def main():
     gamma = float(sys.argv[3])
     result = solve_problem(grid_name, degree, gamma=gamma, tol=1e-3)
     print("Final gamma: ", result["vorticity_gamma"])
+    print("psi min/max:",
+      result["solution"].vector().min(),
+      result["solution"].vector().max())
     plot_solution(result["solution"], title=f"Функция тока: Г = {gamma}")
     plot_vorticity(result["vorticity"], title=f"Завихрённость: Г = {gamma}")
     plt.show()
