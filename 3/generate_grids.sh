@@ -50,6 +50,6 @@ for i in "${!l1_values[@]}"; do
 done
 
 # Цилиндр разных размеров
-for i in "${!l1_values[@]}"; do
-    generate_grid 20 "grid_template_full" ${l1_values[$i]} ${l2_values[$i]} "cyl_d_${d_values[$i]}"
-done
+# for i in "${!l1_values[@]}"; do
+#     generate_grid 20 "grid_template_full" ${l1_values[$i]} ${l2_values[$i]} "cyl_d_${d_values[$i]}"
+# done

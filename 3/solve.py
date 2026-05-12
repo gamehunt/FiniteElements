@@ -183,6 +183,7 @@ def solve_problem(grid_name, degree, gamma=-1.0, max_iter=100, tol=1e-6):
                 "vortex_area": float(vortex_area),
                 "omega_value": float(omega_value),
                 "error": float(error),
+                "psi_min": psi_new.vector().min()
             }
         )
 
@@ -206,6 +207,7 @@ def solve_problem(grid_name, degree, gamma=-1.0, max_iter=100, tol=1e-6):
         "dofs": V.dim(),
         "iterations": len(history),
         "error_final": history[-1]["error"] if history else None,
+        "psi_min": psi.vector().min(),
         "vortex_area": float(final_vortex_area),
         "omega_value": float(final_omega_value),
         "history": history,
@@ -213,7 +215,7 @@ def solve_problem(grid_name, degree, gamma=-1.0, max_iter=100, tol=1e-6):
 
 
 def plot_solution(solution, title="Решение"):
-    plt.figure()
+    plt.figure(figsize=(12, 3))
     c = plot(solution, title=title)
     plt.colorbar(c)
 
