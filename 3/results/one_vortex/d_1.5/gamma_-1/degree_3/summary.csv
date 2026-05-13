@@ -1,2 +1,2 @@
-solver,case,grid,gamma,degree,vertices,cells,dofs,iterations,error_final,vortex_area,omega_value,psi_min,circulation
-solve.py,one_vortex,d_1.5,-1.0,3,5035,9610,43933,13,0.0,0.06573763325175179,-15.21198665869754,-0.06358874844585918,-0.9904389309605826
+solver,case,grid,gamma,degree,vertices,cells,dofs,iterations,error_final,vortex_area,omega_value,psi_min,final_residual,circulation
+solve.py,one_vortex,d_1.5,-1.0,3,5035,9610,43933,13,0.0,0.06573763325175179,-15.21198665869754,-0.06358874844585918,0.038845057637258415,-0.9904389309605826

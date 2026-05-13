@@ -189,6 +189,7 @@ def build_gamma_summary(degree):
                 "N_h": row.get("dofs"),
                 "N_iter": row.get("iterations"),
                 "eps_final": row.get("error_final"),
+                "final_residual": row.get("final_residual"),
                 "psi_min": row.get("psi_min"),
                 "S_final": row.get("vortex_area"),
                 "omega_final": row.get("omega_value")
@@ -203,6 +204,7 @@ def render_gamma_summary_table(summary_table):
         # r"Вершины",
         # r"Треугольники",
         r"$N_{\mathrm{iter}}$",
+        r"$R$",
         r"$\psi_{min}$",
         r"$S_{\mathrm{final}}$",
         r"$\omega_{\mathrm{final}}$",
@@ -213,6 +215,7 @@ def render_gamma_summary_table(summary_table):
               # 1.8, 
               1.2, 
               # 1.5, 
+              1.4,
               1.4, 
               1.4, 
               1.4]
@@ -228,6 +231,7 @@ def render_gamma_summary_table(summary_table):
                 # int(row["N_h"]),
                 int(row["N_iter"]),
                 # format_value(row["eps_final"]),
+                format_value(row["final_residual"]),
                 format_value(row["psi_min"]),
                 format_value(row["S_final"]),
                 format_value(row["omega_final"]),
@@ -259,6 +263,7 @@ def build_diameter_summary(grids, gamma, degree):
                 "N_h": row.get("dofs"),
                 "N_iter": row.get("iterations"),
                 "psi_min": row.get("psi_min"),
+                "final_residual": row.get("final_residual"),
                 "eps_final": row.get("error_final"),
                 "S_final": row.get("vortex_area"),
                 "omega_final": row.get("omega_value"),
@@ -321,6 +326,7 @@ def render_diameter_summary_table(summary_table):
         r"Треугольники",
         # r"$N_h$",
         r"$N_{\mathrm{iter}}$",
+        r"$R$",
         r"$\psi_{min}$",
         # r"$\varepsilon_{\mathrm{final}}$",
         r"$S_{\mathrm{final}}$",
@@ -330,9 +336,9 @@ def render_diameter_summary_table(summary_table):
 
     widths = [
             0.7, 
-            1.1, 
-            1.5, 
-            # 1.1,
+            1.2, 
+            1.7, 
+            1.0,
             1.2, 
             1.5, 
             # 1.4, 
@@ -350,7 +356,7 @@ def render_diameter_summary_table(summary_table):
                 int(row["N_T"]),
                 # int(row["N_h"]),
                 int(row["N_iter"]),
-                # format_value(row["error_final"]),
+                format_value(row["final_residual"]),
                 format_value(row["psi_min"]),
                 format_value(row["S_final"]),
                 format_value(row["omega_final"]),
@@ -616,12 +622,12 @@ def render_diameter_results():
         st.stop()
     render_diameter_summary_table(summary_table)
 
-    history = build_diameter_degree_history(grid_name, gamma)
-    if history.empty:
-        st.warning("Нет history.csv для выбранных параметров.")
-        st.stop()
-
-    render_history_graphs(history)
+    # history = build_diameter_degree_history(grid_name, gamma)
+    # if history.empty:
+    #     st.warning("Нет history.csv для выбранных параметров.")
+    #     st.stop()
+    #
+    # render_history_graphs(history)
 
 def render_history_graphs(history):
     st.subheader("Сходимость")

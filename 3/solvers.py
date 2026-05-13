@@ -112,6 +112,7 @@ def run_one_vortex():
                     "vortex_area": result["vortex_area"],
                     "omega_value": result["omega_value"],
                     "psi_min": result["psi_min"],
+                    "final_residual": result["final_residual"],
                     "circulation": float(result["vorticity_gamma"]),
                 }
 
