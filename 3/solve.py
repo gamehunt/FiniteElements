@@ -114,6 +114,31 @@ def compute_circulation_from_vorticity(psi, omega, dx):
     return circulation
 
 
+def compute_residual(V, bcs, psi, omega):
+    """
+    Вычисляет невязку уравнения Пуассона: ||-Δψ - ω||
+    """
+    v = TestFunction(V)
+    u = TrialFunction(V)
+    
+    a = dot(grad(u), grad(v)) * dx
+    L = -omega * v * dx
+    
+    A = assemble(a)
+    b = assemble(L)
+    
+    # # Применяем граничные условия к матрице и правой части
+    bc_apply = [bc.apply(A, b) for bc in bcs]
+    
+    # Получаем вектор решения
+    psi_vec = psi.vector()
+    
+    # Вычисляем невязку: r = b - A*psi
+    A_psi = A * psi_vec
+    residual = b - A_psi
+    
+    return residual.get_local()
+
 def solve_problem(grid_name, degree, gamma=-1.0, max_iter=100, tol=1e-6):
     mesh = Mesh(f"grids/{grid_name}/grid_{grid_name}.xml")
     boundaries = MeshFunction(
@@ -177,13 +202,19 @@ def solve_problem(grid_name, degree, gamma=-1.0, max_iter=100, tol=1e-6):
         error = errornorm(psi_new, psi, "L2")
         print("Error =", error)
 
+        # Расчёт невязки для текущей итерации
+        residual = compute_residual(V, bcs, psi_new, omega)
+        residual_norm = np.linalg.norm(residual) if residual.size > 0 else 0.0
+        print("Residual norm =", residual_norm)
+
         history.append(
             {
                 "iteration": k + 1,
                 "vortex_area": float(vortex_area),
                 "omega_value": float(omega_value),
                 "error": float(error),
-                "psi_min": psi_new.vector().min()
+                "psi_min": psi_new.vector().min(),
+                "residual_norm": float(residual_norm)
             }
         )
 
@@ -196,6 +227,11 @@ def solve_problem(grid_name, degree, gamma=-1.0, max_iter=100, tol=1e-6):
     final_omega_value = gamma / final_vortex_area if final_vortex_area > 1e-12 else 0.0
     final_omega = compute_vorticity_field(psi, gamma, final_vortex_area)
     final_gamma = compute_circulation_from_vorticity(psi, final_omega, dx)
+    
+    # Расчёт финальной невязки
+    final_residual = compute_residual(V, bcs, psi, final_omega)
+    final_residual_norm = np.linalg.norm(final_residual) if final_residual.size > 0 else 0.0
+    print(f"\nФинальная невязка: {final_residual_norm}")
 
     return {
         "mesh": mesh,
@@ -208,8 +244,10 @@ def solve_problem(grid_name, degree, gamma=-1.0, max_iter=100, tol=1e-6):
         "iterations": len(history),
         "error_final": history[-1]["error"] if history else None,
         "psi_min": psi.vector().min(),
+        "final_residual": final_residual_norm,
         "vortex_area": float(final_vortex_area),
         "omega_value": float(final_omega_value),
+        "residual_final": float(final_residual_norm),  # Добавлено поле с финальной невязкой
         "history": history,
     }
 

@@ -70,15 +70,8 @@ def discover_diameter_grids():
 
     return sorted(grids, key=sort_key, reverse=True)
 
-
-# ------------------------------------------------------------
-# Чтение результатов
-# ------------------------------------------------------------
-
-
 def result_dir(root, grid_name, gamma, degree):
     return root / grid_name / gamma_dir_name(gamma) / degree_dir_name(degree)
-
 
 def read_summary(root, grid_name, gamma, degree):
     path = result_dir(root, grid_name, gamma, degree) / "summary.csv"
@@ -167,6 +160,7 @@ def build_refinement_summary(degree, gamma=-1):
                 "N_h": row.get("dofs"),
                 "N_iter": row.get("iterations"),
                 "eps_final": row.get("error_final"),
+                "final_residual": row.get("final_residual"),
                 "psi_min": row.get("psi_min"),
                 "S_final": row.get("vortex_area"),
                 "omega_final": row.get("omega_value"),
@@ -282,6 +276,7 @@ def render_refinement_summary_table(summary_table):
         r"Треугольники",
         r"$N_{\mathrm{iter}}$",
         # r"$\varepsilon_{\mathrm{final}}$",
+        r"$R$",
         r"$\psi_{min}$",
         r"$S_{\mathrm{final}}$",
         r"$\omega_{\mathrm{final}}$",
@@ -290,6 +285,7 @@ def render_refinement_summary_table(summary_table):
     widths = [0.7, 
               1.4, 
               1.8, 
+              1.2, 
               1.2, 
               # 1.5, 
               1.4, 
@@ -307,6 +303,7 @@ def render_refinement_summary_table(summary_table):
                 # int(row["N_h"]),
                 int(row["N_iter"]),
                 # format_value(row["eps_final"]),
+                format_value(row["final_residual"]),
                 format_value(row["psi_min"]),
                 format_value(row["S_final"]),
                 format_value(row["omega_final"]),
