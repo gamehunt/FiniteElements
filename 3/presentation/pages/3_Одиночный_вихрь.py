@@ -4,6 +4,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
+
 def find_project_root():
     current = Path(__file__).resolve()
 
@@ -25,11 +26,14 @@ DEGREES = [1, 2, 3]
 GAMMAS = [-1.0, -2.5, -5.0]
 REFINEMENT_GRIDS = ["5", "10", "20"]
 
+
 def gamma_dir_name(gamma):
     return f"gamma_{gamma:g}"
 
+
 def degree_dir_name(degree):
     return f"degree_{degree}"
+
 
 def grid_to_diameter(grid_name):
     if grid_name.startswith("d_"):
@@ -70,8 +74,10 @@ def discover_diameter_grids():
 
     return sorted(grids, key=sort_key, reverse=True)
 
+
 def result_dir(root, grid_name, gamma, degree):
     return root / grid_name / gamma_dir_name(gamma) / degree_dir_name(degree)
+
 
 def read_summary(root, grid_name, gamma, degree):
     path = result_dir(root, grid_name, gamma, degree) / "summary.csv"
@@ -141,6 +147,7 @@ def render_table(headers, rows, widths):
                     unsafe_allow_html=True,
                 )
 
+
 def build_refinement_summary(degree, gamma=-1):
     rows = []
 
@@ -170,6 +177,7 @@ def build_refinement_summary(degree, gamma=-1):
 
     return pd.DataFrame(rows)
 
+
 def build_gamma_summary(degree):
     rows = []
 
@@ -192,17 +200,19 @@ def build_gamma_summary(degree):
                 "final_residual": row.get("final_residual"),
                 "psi_min": row.get("psi_min"),
                 "S_final": row.get("vortex_area"),
-                "omega_final": row.get("omega_value")
+                "omega_final": row.get("omega_value"),
             }
         )
 
     return pd.DataFrame(rows)
+
 
 def render_gamma_summary_table(summary_table):
     headers = [
         r"Г",
         # r"Вершины",
         # r"Треугольники",
+        r"Степени свободы",
         r"$N_{\mathrm{iter}}$",
         r"$R$",
         r"$\psi_{min}$",
@@ -210,15 +220,17 @@ def render_gamma_summary_table(summary_table):
         r"$\omega_{\mathrm{final}}$",
     ]
 
-    widths = [0.7, 
-              # 1.4, 
-              # 1.8, 
-              1.2, 
-              # 1.5, 
-              1.4,
-              1.4, 
-              1.4, 
-              1.4]
+    widths = [
+        0.7,
+        # 1.1,
+        # 1.5,
+        1.5,
+        1.0,
+        1.0,
+        # 1.4,
+        1.0,
+        1.0,
+    ]
 
     rows = []
     for _, row in summary_table.iterrows():
@@ -228,7 +240,7 @@ def render_gamma_summary_table(summary_table):
                 row["gamma"],
                 # int(row["N_v"]),
                 # int(row["N_T"]),
-                # int(row["N_h"]),
+                int(row["N_h"]),
                 int(row["N_iter"]),
                 # format_value(row["eps_final"]),
                 format_value(row["final_residual"]),
@@ -240,6 +252,7 @@ def render_gamma_summary_table(summary_table):
         )
 
     render_table(headers, rows, widths)
+
 
 def build_diameter_summary(grids, gamma, degree):
     rows = []
@@ -277,8 +290,9 @@ def build_diameter_summary(grids, gamma, degree):
 def render_refinement_summary_table(summary_table):
     headers = [
         r"$N$",
-        r"Вершины",
-        r"Треугольники",
+        # r"Вершины",
+        # r"Треугольники",
+        r"Степени свободы",
         r"$N_{\mathrm{iter}}$",
         # r"$\varepsilon_{\mathrm{final}}$",
         r"$R$",
@@ -287,15 +301,17 @@ def render_refinement_summary_table(summary_table):
         r"$\omega_{\mathrm{final}}$",
     ]
 
-    widths = [0.7, 
-              1.4, 
-              1.8, 
-              1.2, 
-              1.2, 
-              # 1.5, 
-              1.4, 
-              1.4, 
-              1.4]
+    widths = [
+        0.7,
+        # 1.1,
+        # 1.5,
+        1.5,
+        1.0,
+        1.0,
+        # 1.4,
+        1.0,
+        1.0,
+    ]
 
     rows = []
     for _, row in summary_table.iterrows():
@@ -303,9 +319,9 @@ def render_refinement_summary_table(summary_table):
         rows.append(
             [
                 row["N"],
-                int(row["N_v"]),
-                int(row["N_T"]),
-                # int(row["N_h"]),
+                # int(row["N_v"]),
+                # int(row["N_T"]),
+                int(row["N_h"]),
                 int(row["N_iter"]),
                 # format_value(row["eps_final"]),
                 format_value(row["final_residual"]),
@@ -322,9 +338,9 @@ def render_refinement_summary_table(summary_table):
 def render_diameter_summary_table(summary_table):
     headers = [
         r"$D$",
-        r"Вершины",
-        r"Треугольники",
-        # r"$N_h$",
+        # r"Вершины",
+        # r"Треугольники",
+        r"Степени свободы",
         r"$N_{\mathrm{iter}}$",
         r"$R$",
         r"$\psi_{min}$",
@@ -335,16 +351,16 @@ def render_diameter_summary_table(summary_table):
     ]
 
     widths = [
-            0.7, 
-            1.2, 
-            1.7, 
-            1.0,
-            1.2, 
-            1.5, 
-            # 1.4, 
-            1.4, 
-            1.4
-            ]
+        0.7,
+        # 1.1,
+        # 1.5,
+        1.5,
+        1.0,
+        1.0,
+        # 1.4,
+        1.0,
+        1.0,
+    ]
 
     rows = []
 
@@ -352,9 +368,9 @@ def render_diameter_summary_table(summary_table):
         rows.append(
             [
                 format_value(row["D"]),
-                int(row["N_v"]),
-                int(row["N_T"]),
-                # int(row["N_h"]),
+                # int(row["N_v"]),
+                # int(row["N_T"]),
+                int(row["N_h"]),
                 int(row["N_iter"]),
                 format_value(row["final_residual"]),
                 format_value(row["psi_min"]),
@@ -367,7 +383,7 @@ def render_diameter_summary_table(summary_table):
     render_table(headers, rows, widths)
 
 
-def build_refinement_history(degree,gamma=-1):
+def build_refinement_history(degree, gamma=-1):
     frames = []
 
     for grid_name in REFINEMENT_GRIDS:
@@ -385,6 +401,7 @@ def build_refinement_history(degree,gamma=-1):
         return pd.DataFrame()
 
     return pd.concat(frames, ignore_index=True)
+
 
 def build_diameter_degree_history(grid_name, gamma):
     frames = []
@@ -404,6 +421,7 @@ def build_diameter_degree_history(grid_name, gamma):
         return pd.DataFrame()
 
     return pd.concat(frames, ignore_index=True)
+
 
 def plot_history_comparison(history, value_column, title, y_title, value_title):
     fig = go.Figure()
@@ -463,9 +481,9 @@ def plot_history_comparison(history, value_column, title, y_title, value_title):
 def render_image(root, grid_name, gamma, degree, filename, title_func):
     if title_func:
         st.markdown(f"### {title_func(grid_name)}")
-    
+
     path = image_path(root, grid_name, gamma, degree, filename)
-    
+
     if path.exists():
         st.image(str(path), use_container_width=True)
     else:
@@ -491,7 +509,6 @@ def render_verification():
             REFINEMENT_GRIDS,
             format_func=lambda x: f"N = {x}",
         )
-
 
     st.subheader("Функция тока")
     render_image(
@@ -519,6 +536,7 @@ def render_verification():
 
     render_history_graphs(history)
 
+
 def render_gamma_results():
     st.title("Зависимость от разных Г")
 
@@ -539,7 +557,6 @@ def render_gamma_results():
             value=GAMMAS[0],
             format_func=lambda x: f"Г = {x}",
         )
-
 
     st.subheader("Функция тока")
     render_image(
@@ -567,6 +584,7 @@ def render_gamma_results():
     #
     # render_history_graphs(history)
 
+
 def render_diameter_results():
     st.title("Зависимость от диаметра цилиндра")
 
@@ -580,7 +598,7 @@ def render_diameter_results():
 
     col3, col1, col2 = st.columns([1, 1, 1])
 
-    with col3:    
+    with col3:
         degree = st.select_slider(
             "Степень полинома p",
             options=DEGREES,
@@ -604,7 +622,6 @@ def render_diameter_results():
             key="diameter_gamma",
         )
 
-
     st.subheader("Функция тока")
     render_image(
         root=RESULTS_COMMON_ROOT,
@@ -612,7 +629,7 @@ def render_diameter_results():
         gamma=gamma,
         degree=degree,
         filename="psi.png",
-        title_func=None
+        title_func=None,
     )
 
     st.subheader("Сводные данные")
@@ -628,6 +645,7 @@ def render_diameter_results():
     #     st.stop()
     #
     # render_history_graphs(history)
+
 
 def render_history_graphs(history):
     st.subheader("Сходимость")
@@ -674,6 +692,7 @@ def render_history_graphs(history):
     )
     st.plotly_chart(fig, use_container_width=True)
 
+
 def render_solver_code():
     st.title("Код решателя")
 
@@ -684,7 +703,7 @@ def render_solver_code():
     На каждой итерации решается задача Пуассона:
 
     $$
-    -\Delta \psi^{k+1} = \omega^k.
+    -\Delta \psi^{k+1} = \omega(\psi^k).
     $$
 
     Сначала решается потенциальная задача без завихрённости:
@@ -790,7 +809,7 @@ omega.vector().apply("insert")
     Затем снова решается задача Пуассона:
 
     $$
-    -\Delta \psi^{k+1} = \omega^k.
+    -\Delta \psi^{k+1} = \omega(\psi^k).
     $$
 
     Критерий остановки:
