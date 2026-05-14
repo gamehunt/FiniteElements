@@ -245,7 +245,7 @@ def solve_all():
             all_results[f"{grid_name}_{nu:.2f}"] = {
                     "circulation": result["circulation"],
                     "psi_min": psi.vector().min(),
-                    "reinolds": 2 / nu
+                    "reinolds": 2 / nu,
             }
 
     summary_file = os.path.join(output_folder, "results_summary.json")

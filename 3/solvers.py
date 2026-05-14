@@ -86,6 +86,7 @@ def run_one_vortex():
                     grid_name=grid_name,
                     degree=degree,
                     gamma=gamma,
+                    tol=1e-3
                 )
 
                 out_dir = (
@@ -135,6 +136,7 @@ def run_one_vortex_refinement():
                     grid_name=grid_name,
                     degree=degree,
                     gamma=gamma,
+                    tol=1e-3
                 )
 
                 out_dir = (
