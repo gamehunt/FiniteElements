@@ -120,24 +120,25 @@ def compute_residual(V, bcs, psi, omega):
     """
     v = TestFunction(V)
     u = TrialFunction(V)
-    
+
     a = dot(grad(u), grad(v)) * dx
     L = -omega * v * dx
-    
+
     A = assemble(a)
     b = assemble(L)
-    
+
     # # Применяем граничные условия к матрице и правой части
     bc_apply = [bc.apply(A, b) for bc in bcs]
-    
+
     # Получаем вектор решения
     psi_vec = psi.vector()
-    
+
     # Вычисляем невязку: r = b - A*psi
     A_psi = A * psi_vec
     residual = b - A_psi
-    
+
     return residual.get_local()
+
 
 def solve_problem(grid_name, degree, gamma=-1.0, max_iter=100, tol=1e-6):
     mesh = Mesh(f"grids/{grid_name}/grid_{grid_name}.xml")
@@ -214,7 +215,7 @@ def solve_problem(grid_name, degree, gamma=-1.0, max_iter=100, tol=1e-6):
                 "omega_value": float(omega_value),
                 "error": float(error),
                 "psi_min": psi_new.vector().min(),
-                "residual_norm": float(residual_norm)
+                "residual_norm": float(residual_norm),
             }
         )
 
@@ -227,10 +228,12 @@ def solve_problem(grid_name, degree, gamma=-1.0, max_iter=100, tol=1e-6):
     final_omega_value = gamma / final_vortex_area if final_vortex_area > 1e-12 else 0.0
     final_omega = compute_vorticity_field(psi, gamma, final_vortex_area)
     final_gamma = compute_circulation_from_vorticity(psi, final_omega, dx)
-    
+
     # Расчёт финальной невязки
     final_residual = compute_residual(V, bcs, psi, final_omega)
-    final_residual_norm = np.linalg.norm(final_residual) if final_residual.size > 0 else 0.0
+    final_residual_norm = (
+        np.linalg.norm(final_residual) if final_residual.size > 0 else 0.0
+    )
     print(f"\nФинальная невязка: {final_residual_norm}")
 
     return {
@@ -247,7 +250,9 @@ def solve_problem(grid_name, degree, gamma=-1.0, max_iter=100, tol=1e-6):
         "final_residual": final_residual_norm,
         "vortex_area": float(final_vortex_area),
         "omega_value": float(final_omega_value),
-        "residual_final": float(final_residual_norm),  # Добавлено поле с финальной невязкой
+        "residual_final": float(
+            final_residual_norm
+        ),  # Добавлено поле с финальной невязкой
         "history": history,
     }
 
@@ -269,17 +274,9 @@ def plot_solution(solution, title="Решение"):
     plt.ylabel("x2")
 
     mpl.rcParams["hatch.color"] = "red"
-    plt.tricontourf(
-        x,
-        y,
-        values,
-        levels=[values.min(), 0],  # область ниже нуля
-        hatches=["///"],  # тип штриховки
-        alpha=0,
-    )
 
-    plt.tricontour(x, y, values, levels=15, colors="black")
-    plt.tricontour(x, y, values, levels=[0], colors="red", linewidths=2)
+    plt.tricontour(x, y, values, levels=25, colors="black", linewidths=1)
+    plt.tricontour(x, y, values, levels=[0], colors="red", linewidths=1)
 
     return c
 
@@ -296,9 +293,11 @@ def main():
     gamma = float(sys.argv[3])
     result = solve_problem(grid_name, degree, gamma=gamma, tol=1e-3)
     print("Final gamma: ", result["vorticity_gamma"])
-    print("psi min/max:",
-      result["solution"].vector().min(),
-      result["solution"].vector().max())
+    print(
+        "psi min/max:",
+        result["solution"].vector().min(),
+        result["solution"].vector().max(),
+    )
     plot_solution(result["solution"], title=f"Функция тока: Г = {gamma}")
     plot_vorticity(result["vorticity"], title=f"Завихрённость: Г = {gamma}")
     plt.show()

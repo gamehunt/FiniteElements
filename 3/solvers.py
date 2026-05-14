@@ -36,6 +36,7 @@ ONE_VORTEX_GAMMAS = [
     -5.0,
 ]
 
+
 def write_csv(path, rows):
     path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -71,6 +72,7 @@ def save_one_vortex_images(result: dict, out_dir: Path, gamma: float):
     plt.savefig(out_dir / "omega.png", dpi=200)
     plt.close("all")
 
+
 def run_one_vortex():
     for grid_name in ONE_VORTEX_GRIDS:
         for gamma in ONE_VORTEX_GAMMAS:
@@ -83,10 +85,7 @@ def run_one_vortex():
                 print("=" * 80)
 
                 result = solve.solve_problem(
-                    grid_name=grid_name,
-                    degree=degree,
-                    gamma=gamma,
-                    tol=1e-3
+                    grid_name=grid_name, degree=degree, gamma=gamma, tol=1e-3
                 )
 
                 out_dir = (
@@ -120,55 +119,54 @@ def run_one_vortex():
                 write_one_row_csv(out_dir / "summary.csv", summary)
                 write_csv(out_dir / "history.csv", result["history"])
 
+
 def run_one_vortex_refinement():
     gamma = -1
     for grid_name in ONE_VORTEX_REFINEMENT_GRIDS:
         # for gamma in ONE_VORTEX_GAMMAS[]:
-            for degree in DEGREES:
-                print()
-                print("=" * 80)
-                print(
-                    f"Одиночный вихрь, сгущение: grid={grid_name}, gamma={gamma:g}, degree={degree}"
-                )
-                print("=" * 80)
+        for degree in DEGREES:
+            print()
+            print("=" * 80)
+            print(
+                f"Одиночный вихрь, сгущение: grid={grid_name}, gamma={gamma:g}, degree={degree}"
+            )
+            print("=" * 80)
 
-                result = solve.solve_problem(
-                    grid_name=grid_name,
-                    degree=degree,
-                    gamma=gamma,
-                    tol=1e-3
-                )
+            result = solve.solve_problem(
+                grid_name=grid_name, degree=degree, gamma=gamma, tol=1e-3
+            )
 
-                out_dir = (
-                    RESULTS_DIR
-                    / "one_vortex_refinement"
-                    / grid_name
-                    / f"gamma_{gamma:g}"
-                    / f"degree_{degree}"
-                )
+            out_dir = (
+                RESULTS_DIR
+                / "one_vortex_refinement"
+                / grid_name
+                / f"gamma_{gamma:g}"
+                / f"degree_{degree}"
+            )
 
-                save_one_vortex_images(result, out_dir, gamma)
+            save_one_vortex_images(result, out_dir, gamma)
 
-                summary = {
-                    "solver": "solve.py",
-                    "case": "one_vortex_refinement",
-                    "grid": grid_name,
-                    "gamma": gamma,
-                    "degree": degree,
-                    "vertices": result["mesh"].num_vertices(),
-                    "cells": result["mesh"].num_cells(),
-                    "dofs": result["dofs"],
-                    "iterations": result["iterations"],
-                    "error_final": result["error_final"],
-                    "vortex_area": result["vortex_area"],
-                    "omega_value": result["omega_value"],
-                    "psi_min": result["psi_min"],
-                    "final_residual": result["final_residual"],
-                    "circulation": float(result["vorticity_gamma"]),
-                }
+            summary = {
+                "solver": "solve.py",
+                "case": "one_vortex_refinement",
+                "grid": grid_name,
+                "gamma": gamma,
+                "degree": degree,
+                "vertices": result["mesh"].num_vertices(),
+                "cells": result["mesh"].num_cells(),
+                "dofs": result["dofs"],
+                "iterations": result["iterations"],
+                "error_final": result["error_final"],
+                "vortex_area": result["vortex_area"],
+                "omega_value": result["omega_value"],
+                "psi_min": result["psi_min"],
+                "final_residual": result["final_residual"],
+                "circulation": float(result["vorticity_gamma"]),
+            }
 
-                write_one_row_csv(out_dir / "summary.csv", summary)
-                write_csv(out_dir / "history.csv", result["history"])
+            write_one_row_csv(out_dir / "summary.csv", summary)
+            write_csv(out_dir / "history.csv", result["history"])
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -195,6 +193,7 @@ def main():
 
         if args.mode in ("refinement", "all"):
             run_one_vortex_refinement()
+
 
 if __name__ == "__main__":
     main()
